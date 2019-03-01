@@ -26,18 +26,6 @@ namespace JobsServer
         }
 
         /// <summary>
-        /// windows服务名称
-        /// </summary>
-        public string ServiceName => Configuration["hangfire.server.serviceName"];
-        /// <summary>
-        /// Windows 服务展示名称
-        /// </summary>
-        public string ServiceDisplayName => Configuration["hangfire.server.serviceDisplayName"];
-        /// <summary>
-        /// Windows 服务描述
-        /// </summary>
-        public string ServiceDescription => Configuration["hangfire.server.serviceDescription"];
-        /// <summary>
         /// 服务地址
         /// </summary>
         public string ServiceAddress => Configuration["hangfire.server.serviceAddress"];
@@ -56,6 +44,19 @@ namespace JobsServer
         /// 登录密码
         /// </summary>
         public string LoginPwd => Configuration["hangfire.login.pwd"];
+
+        /// <summary>
+        /// 使用redis
+        /// </summary>
+        public bool UseRedis => Convert.ToBoolean(Configuration["hangfire.UseRedis"]);
+        /// <summary>
+        /// 使用mysql
+        /// </summary>
+        public bool UseMySql => Convert.ToBoolean(Configuration["hangfire.UseMySql"]);
+        /// <summary>
+        /// 使用sqlserver
+        /// </summary>
+        public bool UseSqlSerVer => Convert.ToBoolean(Configuration["hangfire.UseSqlServer"]);
 
         /// <summary>
         /// sqlserver数据库连接

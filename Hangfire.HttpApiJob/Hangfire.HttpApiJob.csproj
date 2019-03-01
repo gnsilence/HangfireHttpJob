@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard1.3</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>httpjob for Hangfire</Description>
-    <PackageLicenseUrl>https://github.com/yuzd/Hangfire.HttpJob/blob/master/License.md</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/yuzd/Hangfire.HttpJob</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/gnsilence/HangfireHttpJob</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/gnsilence/HangfireHttpJob</PackageProjectUrl>
     <Version>1.0.2</Version>
   </PropertyGroup>
 

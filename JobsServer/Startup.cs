@@ -23,36 +23,57 @@ namespace JobsServer
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            Redis = ConnectionMultiplexer.Connect(HangfireSettings.Instance.HangfireRedisConnectionString);
+            if (HangfireSettings.Instance.UseRedis)
+            {
+                Redis = ConnectionMultiplexer.Connect(HangfireSettings.Instance.HangfireRedisConnectionString);
+            }
         }
         public static ConnectionMultiplexer Redis;
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHangfire(//使用mysql配置
+            services.AddHangfire(
                 config =>
                 {
-                    //config.UseSqlServerStorage(HangfireSettings.Instance.HangfireSqlserverConnectionString).UseHangfireHttpJob().UseConsole();
-                    //config.UseRedisStorage(Redis).UseHangfireHttpJob().UseConsole();
+                    if (HangfireSettings.Instance.UseSqlSerVer)
+                    {
+                        //使用SQL server
+                        config.UseSqlServerStorage(HangfireSettings.Instance.HangfireSqlserverConnectionString)
+                        .UseHangfireHttpJob().
+                        UseConsole();
+                    }
 
-                    config.UseStorage(new MySqlStorage(
-                        HangfireSettings.Instance.HangfireMysqlConnectionString,
-                        new MySqlStorageOptions
-                        {
-                            TransactionIsolationLevel = IsolationLevel.ReadCommitted,
-                            QueuePollInterval = TimeSpan.FromSeconds(15),
-                            JobExpirationCheckInterval = TimeSpan.FromHours(1),
-                            CountersAggregateInterval = TimeSpan.FromMinutes(5),
-                            PrepareSchemaIfNecessary = false,
-                            DashboardJobListLimit = 50000,
-                            TransactionTimeout = TimeSpan.FromMinutes(1),
-                        })).UseConsole()//使用日志展示
-                        .UseHangfireHttpJob();//启用http任务
+                    if (HangfireSettings.Instance.UseRedis)
+                    {
+                        //使用redis
+                        config.UseRedisStorage(Redis)
+                        .UseHangfireHttpJob()
+                        .UseConsole();
+                    }
+
+                    if (HangfireSettings.Instance.UseMySql)
+                    {
+                        //使用mysql配置
+                        config.UseStorage(new MySqlStorage(
+                            HangfireSettings.Instance.HangfireMysqlConnectionString,
+                            new MySqlStorageOptions
+                            {
+                                TransactionIsolationLevel = IsolationLevel.ReadCommitted,
+                                QueuePollInterval = TimeSpan.FromSeconds(15),
+                                JobExpirationCheckInterval = TimeSpan.FromHours(1),
+                                CountersAggregateInterval = TimeSpan.FromMinutes(5),
+                                PrepareSchemaIfNecessary = false,
+                                DashboardJobListLimit = 50000,
+                                TransactionTimeout = TimeSpan.FromMinutes(1),
+                            })).UseConsole()//使用日志展示
+                            .UseHangfireHttpJob();//启用http任务
+                    }
+
                 }
                 );
             services.AddMvc();
         }
-       
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
