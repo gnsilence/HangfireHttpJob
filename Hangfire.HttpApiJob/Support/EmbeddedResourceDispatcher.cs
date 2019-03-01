@@ -3,7 +3,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Hangfire.HttpJob.Support
+namespace Hangfire.HttpApiJob.Support
 {
     /// <summary>
     /// Alternative to built-in EmbeddedResourceDispatcher, which (for some reasons) is not public.

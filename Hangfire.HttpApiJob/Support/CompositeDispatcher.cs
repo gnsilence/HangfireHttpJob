@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Hangfire.HttpJob.Support
+namespace Hangfire.HttpApiJob.Support
 {
     /// <summary>
     /// Dispatcher that combines output from several other dispatchers.

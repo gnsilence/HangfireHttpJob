@@ -3,7 +3,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Hangfire.HttpJob.Dashboard
+namespace Hangfire.HttpApiJob.Dashboard
 {
     public class DynamicCssDispatcher : IDashboardDispatcher
     {

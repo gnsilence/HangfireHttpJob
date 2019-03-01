@@ -12,6 +12,7 @@ namespace JobsServer
     {
         public static void Main(string[] args)
         {
+            
             //如果是控制台下使用，后面加上console参数即可，默认是服务方式
             var isService = !(Debugger.IsAttached || args.Contains("--console"));
 
@@ -47,7 +48,8 @@ namespace JobsServer
                 {
                     logging.AddEventLog();//启用系统事件日志，
                 })
-                .ConfigureAppConfiguration((context, config) =>{
+                .ConfigureAppConfiguration((context, config) =>
+                {
                     // Configure the app here.
                 }).UseStartup<Startup>();
         }

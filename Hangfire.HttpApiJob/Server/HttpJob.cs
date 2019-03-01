@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 
-namespace Hangfire.HttpJob.Server
+namespace Hangfire.HttpApiJob.Server
 {
     internal class HttpJob
     {
@@ -31,7 +31,7 @@ namespace Hangfire.HttpJob.Server
             {
                 Timeout = TimeSpan.FromMilliseconds(HangfireHttpJobOptions.GlobalHttpTimeOut),
             };
-
+            //Basic认证
             if (!string.IsNullOrEmpty(item.BasicUserName) && !string.IsNullOrEmpty(item.BasicPassword))
             {
                 var byteArray = Encoding.ASCII.GetBytes(item.BasicUserName + ":" + item.BasicPassword);
@@ -56,13 +56,20 @@ namespace Hangfire.HttpJob.Server
             return request;
         }
 
-
-        [AutomaticRetry(Attempts = 3)]
-        [DisplayName("HttpJob:{1}")]
+        /// <summary>
+        /// 执行api方法
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="jobName"></param>
+        /// <param name="context"></param>
+        [AutomaticRetry(Attempts = 3)]//重试次数
+        [DisplayName("ApiJob:{1}")]
         public static void Excute(HttpJobItem item, string jobName = null, PerformContext context = null)
         {
             try
             {
+                //此处信息会显示在执行结果日志中
+                context.WriteLine("任务开始执行");
                 context.WriteLine(jobName);
                 context.WriteLine(JsonConvert.SerializeObject(item));
                 var client = GetHttpClient(item);
@@ -70,12 +77,12 @@ namespace Hangfire.HttpJob.Server
                 var httpResponse = client.SendAsync(httpMesage).GetAwaiter().GetResult();
                 HttpContent content = httpResponse.Content;
                 string result = content.ReadAsStringAsync().GetAwaiter().GetResult();
-                context.WriteLine(result);
+                context.WriteLine($"执行结果：{result}");
             }
             catch (Exception ex)
             {
                 Logger.ErrorException("HttpJob.Excute", ex);
-                context.WriteLine(ex.Message);
+                context.WriteLine($"执行出错：{ex.Message}");
             }
         }
 

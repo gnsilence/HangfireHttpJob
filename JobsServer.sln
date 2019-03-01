@@ -5,9 +5,7 @@ VisualStudioVersion = 15.0.28010.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JobsServer", "JobsServer\JobsServer.csproj", "{F8544496-9AFD-4145-802E-DEE78010A175}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.MySql", "..\项目\Hangfire.Mysql.Extend-master\Hangfire.Mysql.Extend-master\Hangfire.MySql\Hangfire.MySql.csproj", "{A4D8007C-A2E5-4BD9-A707-87BA00EB6B7A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob", "Hangfire.HttpJob\Hangfire.HttpJob.csproj", "{FE4DAD62-239C-4D80-B9E5-25B47037CFC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpApiJob", "Hangfire.HttpApiJob\Hangfire.HttpApiJob.csproj", "{FE4DAD62-239C-4D80-B9E5-25B47037CFC9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Dashboard.BasicAuthorization", "Hangfire.Dashboard.BasicAuthorization\Hangfire.Dashboard.BasicAuthorization.csproj", "{054A206F-5079-4000-B61B-62BF34474D55}"
 EndProject
@@ -21,10 +19,6 @@ Global
 		{F8544496-9AFD-4145-802E-DEE78010A175}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8544496-9AFD-4145-802E-DEE78010A175}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8544496-9AFD-4145-802E-DEE78010A175}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A4D8007C-A2E5-4BD9-A707-87BA00EB6B7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A4D8007C-A2E5-4BD9-A707-87BA00EB6B7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A4D8007C-A2E5-4BD9-A707-87BA00EB6B7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A4D8007C-A2E5-4BD9-A707-87BA00EB6B7A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FE4DAD62-239C-4D80-B9E5-25B47037CFC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FE4DAD62-239C-4D80-B9E5-25B47037CFC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE4DAD62-239C-4D80-B9E5-25B47037CFC9}.Release|Any CPU.ActiveCfg = Release|Any CPU

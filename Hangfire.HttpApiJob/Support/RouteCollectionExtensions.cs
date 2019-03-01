@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Hangfire.HttpJob.Support
+namespace Hangfire.HttpApiJob.Support
 {
     /// <summary>
     /// Provides extension methods for <see cref="RouteCollection"/>.

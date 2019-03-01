@@ -11,9 +11,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Hangfire.MySql.Core;
 using System.Data;
-using Hangfire.HttpJob;
+using Hangfire.HttpApiJob;
 using Hangfire.Console;
 using Hangfire.Dashboard.BasicAuthorization;
+using StackExchange.Redis;
 
 namespace JobsServer
 {
@@ -22,15 +23,18 @@ namespace JobsServer
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            Redis = ConnectionMultiplexer.Connect(HangfireSettings.Instance.HangfireRedisConnectionString);
         }
-
+        public static ConnectionMultiplexer Redis;
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
             services.AddHangfire(//使用mysql配置
                 config =>
                 {
+                    //config.UseSqlServerStorage(HangfireSettings.Instance.HangfireSqlserverConnectionString).UseHangfireHttpJob().UseConsole();
+                    //config.UseRedisStorage(Redis).UseHangfireHttpJob().UseConsole();
+
                     config.UseStorage(new MySqlStorage(
                         HangfireSettings.Instance.HangfireMysqlConnectionString,
                         new MySqlStorageOptions
@@ -46,8 +50,9 @@ namespace JobsServer
                         .UseHangfireHttpJob();//启用http任务
                 }
                 );
+            services.AddMvc();
         }
-
+       
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
@@ -56,12 +61,13 @@ namespace JobsServer
                 app.UseDeveloperExceptionPage();
             }
             var queues = new[] { "default", "apis", "localjobs" };
-            app.UseHangfireServer(new BackgroundJobServerOptions() {
+            app.UseHangfireServer(new BackgroundJobServerOptions()
+            {
                 ShutdownTimeout = TimeSpan.FromMinutes(30),//等待所有任务执行的时间当服务被关闭时
                 Queues = queues,//队列
                 WorkerCount = Math.Max(Environment.ProcessorCount, 20)//工作线程数，当前允许的最大线程，默认20
             });
-            app.UseHangfireDashboard("/jobs", new DashboardOptions
+            app.UseHangfireDashboard("/job", new DashboardOptions
             {
                 AppPath = HangfireSettings.Instance.AppWebSite,//返回时跳转的地址
                 Authorization = new[] { new BasicAuthAuthorizationFilter(new BasicAuthAuthorizationFilterOptions
