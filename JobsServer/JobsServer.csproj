@@ -24,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\项目\Hangfire.HttpJob-master\Hangfire.HttpJob-master\Hangfire.HttpJob\Hangfire.HttpJob.csproj" />
     <ProjectReference Include="..\Hangfire.Dashboard.BasicAuthorization\Hangfire.Dashboard.BasicAuthorization.csproj" />
+    <ProjectReference Include="..\Hangfire.HttpJob\Hangfire.HttpJob.csproj" />
   </ItemGroup>
 
   <ItemGroup>

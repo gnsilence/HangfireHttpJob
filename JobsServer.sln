@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JobsServer", "JobsServer\Jo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Dashboard.BasicAuthorization", "Hangfire.Dashboard.BasicAuthorization\Hangfire.Dashboard.BasicAuthorization.csproj", "{054A206F-5079-4000-B61B-62BF34474D55}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob", "..\项目\Hangfire.HttpJob-master\Hangfire.HttpJob-master\Hangfire.HttpJob\Hangfire.HttpJob.csproj", "{682F4A9F-8732-4C95-9F84-C9E914109E9C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob", "Hangfire.HttpJob\Hangfire.HttpJob.csproj", "{9CC45DEA-9CF3-403F-82B8-5AFA492AC42E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{054A206F-5079-4000-B61B-62BF34474D55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{054A206F-5079-4000-B61B-62BF34474D55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{054A206F-5079-4000-B61B-62BF34474D55}.Release|Any CPU.Build.0 = Release|Any CPU
-		{682F4A9F-8732-4C95-9F84-C9E914109E9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{682F4A9F-8732-4C95-9F84-C9E914109E9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{682F4A9F-8732-4C95-9F84-C9E914109E9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{682F4A9F-8732-4C95-9F84-C9E914109E9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CC45DEA-9CF3-403F-82B8-5AFA492AC42E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CC45DEA-9CF3-403F-82B8-5AFA492AC42E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CC45DEA-9CF3-403F-82B8-5AFA492AC42E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CC45DEA-9CF3-403F-82B8-5AFA492AC42E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
