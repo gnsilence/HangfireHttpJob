@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Hangfire.MySql.Core;
 using System.Data;
-using Hangfire.HttpApiJob;
+using Hangfire.HttpJob;
 using Hangfire.Console;
 using Hangfire.Dashboard.BasicAuthorization;
 using StackExchange.Redis;
