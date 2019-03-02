@@ -6,7 +6,7 @@
         }
 
         HttpJob.prototype._initialize = function () {
-
+            
             /*
           生成corn表达式相关方法
            */
@@ -629,6 +629,7 @@
 
 
             $('.jsoneditor-menu').hide();
+            $("#footer").hide();//隐藏底部显示
         };
 
         return HttpJob;
