@@ -7,7 +7,7 @@
 
 3.添加了basic认证，账号密码在config配置，用来登录hangfire面板
 
-windows服务部署
+Windows服务部署
 ====
 控制台方式运行,需要加参数 --console
 
