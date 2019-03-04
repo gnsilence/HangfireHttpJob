@@ -1,25 +1,50 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Hangfire.MySql.Core;
 using System.Data;
 using Hangfire.HttpJob;
 using Hangfire.Console;
 using Hangfire.Dashboard.BasicAuthorization;
 using StackExchange.Redis;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using System.Collections.Generic;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Threading.Tasks;
+using System.Threading;
+using Newtonsoft.Json;
+using System.Linq;
+using System.Net.Mime;
+using Microsoft.AspNetCore.Http;
+using System.Net.Http;
+using HealthChecks.Uris;
+using Hangfire.SQLite;
 
 namespace JobsServer
 {
+    public class RandomHealthCheck
+        : IHealthCheck
+    {
+
+        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+        {
+            if (DateTime.UtcNow.Minute % 2 == 0)
+            {
+                return Task.FromResult(HealthCheckResult.Healthy());
+            }
+            return Task.FromResult(HealthCheckResult.Unhealthy(description: "出现异常"));
+        }
+    }
     public class Startup
     {
+        ////sqlite数据库路径
+        //private static string SqliteDbPath =
+        //    AppDomain.CurrentDomain.BaseDirectory + ("\\HangfireDb;");
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -32,9 +57,27 @@ namespace JobsServer
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
+            //添加健康检查地址
+            HangfireSettings.Instance.HostServers.ForEach(s =>
+            {
+                services.AddHealthChecks().AddUrlGroup(new Uri(s.Uri), s.httpMethod.ToLower() == "post" ? HttpMethod.Post : HttpMethod.Get, $"{s.Uri}");
+            });
             services.AddHangfire(
                 config =>
                 {
+                    //sqlite数据库，操作缓慢不建议使用
+                    //config.UseSQLiteStorage($"Data Source={SqliteDbPath};", new SQLiteStorageOptions()
+                    //{
+                    //    TransactionIsolationLevel = IsolationLevel.ReadCommitted,
+                    //    QueuePollInterval = TimeSpan.FromSeconds(15),
+                    //    JobExpirationCheckInterval = TimeSpan.FromHours(1),
+                    //    CountersAggregateInterval = TimeSpan.FromMinutes(5),
+                    //    PrepareSchemaIfNecessary = false,
+                    //    DashboardJobListLimit = 50000,
+                    //    TransactionTimeout = TimeSpan.FromMinutes(1),
+                    //}).UseHangfireHttpJob().UseConsole();
+
+
                     if (HangfireSettings.Instance.UseSqlSerVer)
                     {
                         //使用SQL server
@@ -71,6 +114,7 @@ namespace JobsServer
 
                 }
                 );
+            services.AddHealthChecksUI();
             services.AddMvc();
         }
 
@@ -106,6 +150,31 @@ namespace JobsServer
                     }
                 })
                 }
+            });
+            //重写json报告数据，可用于远程调用获取健康检查结果
+            var options = new HealthCheckOptions();
+            options.ResponseWriter = async (c, r) =>
+            {
+                c.Response.ContentType = "application/json";
+
+                var result = JsonConvert.SerializeObject(new
+                {
+                    status = r.Status.ToString(),
+                    errors = r.Entries.Select(e => new { key = e.Key, value = e.Value.Status.ToString() })
+                });
+                await c.Response.WriteAsync(result);
+            };
+
+            app.UseHealthChecks("/healthz", new HealthCheckOptions()
+            {
+                Predicate = _ => true,
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
+            app.UseHealthChecks("/health", options);//获取自定义格式的json数据
+            app.UseHealthChecksUI(setup =>
+            {
+                setup.UIPath = "/hc"; // 健康检查的UI面板地址
+                setup.ApiPath = "/hc-api"; // 用于api获取json的检查数据
             });
             app.UseMvc();
         }

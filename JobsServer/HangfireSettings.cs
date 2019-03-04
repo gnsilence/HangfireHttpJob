@@ -23,6 +23,8 @@ namespace JobsServer
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
             Configuration = builder.Build();
+            //绑定服务到集合
+            Configuration.GetSection("HealthChecks-UI:CheckUrls").Bind(HostServers);
         }
 
         /// <summary>
@@ -72,5 +74,14 @@ namespace JobsServer
         ///  使用redis连接
         /// </summary>
         public string HangfireRedisConnectionString => Configuration.GetConnectionString("hangfire.redis");
+        ///// <summary>
+        ///// 使用Sqlite
+        ///// </summary>
+        //public string HangfireSqliteConnectionString=> Configuration["HealthChecks-UI:HealthCheckDatabaseConnectionString"];
+
+        /// <summary>
+        /// 健康检查api地址
+        /// </summary>
+        public List<HealthCheckInfo> HostServers { get; } = new List<HealthCheckInfo>();
     }
 }

@@ -58,13 +58,15 @@ namespace Hangfire.HttpJob.Server
 
 
         [AutomaticRetry(Attempts = 3)]
-        [DisplayName("HttpJob:{1}")]
+        [DisplayName("Api任务:{1}")]
+        [Queue("apis")]
         public static void Excute(HttpJobItem item, string jobName = null, PerformContext context = null)
         {
             try
             {
                 //此处信息会显示在执行结果日志中
                 context.WriteLine("任务开始执行");
+                context.WriteLine($"{DateTime.Now.ToString()}");
                 context.WriteLine(jobName);
                 context.WriteLine(JsonConvert.SerializeObject(item));
                 var client = GetHttpClient(item);

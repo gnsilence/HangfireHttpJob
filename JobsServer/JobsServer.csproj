@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,12 +11,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CSRedisCore" Version="3.0.39" />
+    <PackageReference Include="AspNetCore.HealthChecks.Hangfire" Version="2.2.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.Publisher.Prometheus" Version="2.2.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.UI" Version="2.2.17" />
+    <PackageReference Include="AspNetCore.HealthChecks.Uris" Version="2.2.2" />
     <PackageReference Include="Hangfire.MySql.Core3" Version="1.0.0" />
+    <PackageReference Include="Hangfire.Redis" Version="2.0.1" />
     <PackageReference Include="Hangfire.Redis.StackExchange.StrongName" Version="1.7.0" />
-    <PackageReference Include="Hangfire.SqlServer" Version="1.6.19" />
+    <PackageReference Include="Hangfire.SQLite.Core" Version="1.0.2" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.6.22" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.1.0" />
   </ItemGroup>
 
@@ -35,6 +43,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="HangfireDb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="healthchecksdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="MysqlDataBase\Install.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
