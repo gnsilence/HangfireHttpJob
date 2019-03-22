@@ -13,8 +13,6 @@ namespace Hangfire.HttpJob
         {
             if (options == null) options = new HangfireHttpJobOptions();
             var assembly = typeof(HangfireHttpJobOptions).GetTypeInfo().Assembly;
-
-
             //处理http请求
             DashboardRoutes.Routes.Add("/httpjob", new HttpJobDispatcher(options));
             DashboardRoutes.Routes.AddRazorPage("/corn", x => new CornJobsPage());

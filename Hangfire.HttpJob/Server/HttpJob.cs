@@ -4,9 +4,13 @@ using Hangfire.Server;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using MailKit;
+using MimeKit;
+using MailKit.Net.Smtp;
 
 namespace Hangfire.HttpJob.Server
 {
@@ -14,6 +18,7 @@ namespace Hangfire.HttpJob.Server
     {
         private static readonly ILog Logger = LogProvider.For<HttpJob>();
         public static HangfireHttpJobOptions HangfireHttpJobOptions;
+        private static MimeMessage mimeMessage;
 
 
         public static HttpClient GetHttpClient(HttpJobItem item)
@@ -27,9 +32,10 @@ namespace Hangfire.HttpJob.Server
             {
                 handler.Proxy = HangfireHttpJobOptions.Proxy;
             }
+
             var HttpClient = new HttpClient(handler)
             {
-                Timeout = TimeSpan.FromMilliseconds(HangfireHttpJobOptions.GlobalHttpTimeOut),
+                Timeout = TimeSpan.FromMilliseconds(item.Timeout == 0 ? HangfireHttpJobOptions.GlobalHttpTimeOut : item.Timeout),
             };
 
             if (!string.IsNullOrEmpty(item.BasicUserName) && !string.IsNullOrEmpty(item.BasicPassword))
@@ -64,7 +70,24 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
+                mimeMessage = new MimeMessage();
+                mimeMessage.From.Add(new MailboxAddress(HangfireHttpJobOptions.SendMailAddress));
+                HangfireHttpJobOptions.SendToMailList.ForEach(k =>
+                {
+                    mimeMessage.To.Add(new MailboxAddress(k));
+                });
+                mimeMessage.Subject = HangfireHttpJobOptions.SMTPSubject;
+            }
+            catch (Exception ee)
+            {
+                context.SetTextColor(ConsoleTextColor.Red);
+                context.WriteLine($"邮件服务异常，异常为：{ee}");
+            }
+            
+            try
+            {
                 //此处信息会显示在执行结果日志中
+                context.SetTextColor(ConsoleTextColor.Yellow);
                 context.WriteLine("任务开始执行");
                 context.WriteLine($"{DateTime.Now.ToString()}");
                 context.WriteLine(jobName);
@@ -78,6 +101,16 @@ namespace Hangfire.HttpJob.Server
             }
             catch (Exception ex)
             {
+                context.SetTextColor(ConsoleTextColor.Red);
+                var builder = new BodyBuilder();
+                builder.TextBody = $"执行出错,任务名称【{item.JobName}】,错误详情：{ex}";
+                mimeMessage.Body = builder.ToMessageBody();
+                var client = new SmtpClient();
+                client.Connect(HangfireHttpJobOptions.SMTPServerAddress, HangfireHttpJobOptions.SMTPPort, true);     //连接服务
+                client.AuthenticationMechanisms.Remove("XOAUTH2");
+                client.Authenticate(HangfireHttpJobOptions.SendMailAddress, HangfireHttpJobOptions.SMTPPwd); //验证账号密码
+                client.Send(mimeMessage);
+                client.Disconnect(true);
                 Logger.ErrorException("HttpJob.Excute", ex);
                 context.WriteLine($"执行出错：{ex.Message}");
             }

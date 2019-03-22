@@ -25,6 +25,13 @@ namespace JobsServer
             Configuration = builder.Build();
             //绑定服务到集合
             Configuration.GetSection("HealthChecks-UI:CheckUrls").Bind(HostServers);
+            //绑定接收者邮箱
+            Configuration.GetSection("SMTPConfig:SendToMailList").Bind(SendList);
+
+            SendList.ForEach(p =>
+            {
+                SendMailList.Add(p.Email);
+            });
         }
 
         /// <summary>
@@ -68,7 +75,7 @@ namespace JobsServer
         /// <summary>
         /// 使用mysql连接
         /// </summary>
-        public string HangfireMysqlConnectionString=>Configuration.GetConnectionString("hangfire.Mysql");
+        public string HangfireMysqlConnectionString => Configuration.GetConnectionString("hangfire.Mysql");
 
         /// <summary>
         ///  使用redis连接
@@ -83,5 +90,40 @@ namespace JobsServer
         /// 健康检查api地址
         /// </summary>
         public List<HealthCheckInfo> HostServers { get; } = new List<HealthCheckInfo>();
+
+        #region 邮件相关配置
+        /// <summary>
+        /// SMTP地址
+        /// </summary>
+        public string SMTPServerAddress => Configuration["SMTPConfig:SMTPServerAddress"];
+        /// <summary>
+        /// SMTP端口
+        /// </summary>
+        public int SMTPPort => Convert.ToInt32(Configuration["SMTPConfig:SMTPPort"]);
+        /// <summary>
+        /// 校验密码
+        /// </summary>
+        public string SMTPPwd => Configuration["SMTPConfig:SMTPPwd"];
+        /// <summary>
+        /// 发送者邮箱
+        /// </summary>
+        public string SendMailAddress => Configuration["SMTPConfig:SendMailAddress"];
+        /// <summary>
+        /// 邮件标题
+        /// </summary>
+        public string SMTPSubject => Configuration["SMTPConfig:SMTPSubject"];
+        /// <summary>
+        /// 接收者邮箱
+        /// </summary>
+        private List<Emails> SendList { get; } = new List<Emails>();
+        /// <summary>
+        /// 接收者邮箱
+        /// </summary>
+        public List<string> SendMailList { get; set; } = new List<string>();
+        #endregion
+    }
+    public class Emails
+    {
+        public string Email { get; set; }
     }
 }
