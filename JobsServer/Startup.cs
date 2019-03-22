@@ -82,7 +82,15 @@ namespace JobsServer
                     {
                         //使用SQL server
                         config.UseSqlServerStorage(HangfireSettings.Instance.HangfireSqlserverConnectionString)
-                        .UseHangfireHttpJob()
+                        .UseHangfireHttpJob(new HangfireHttpJobOptions()
+                        {
+                            SendToMailList = HangfireSettings.Instance.SendMailList,
+                            SendMailAddress = HangfireSettings.Instance.SendMailAddress,
+                            SMTPServerAddress = HangfireSettings.Instance.SMTPServerAddress,
+                            SMTPPort = HangfireSettings.Instance.SMTPPort,
+                            SMTPPwd = HangfireSettings.Instance.SMTPPwd,
+                            SMTPSubject = HangfireSettings.Instance.SMTPSubject
+                        })
                         .UseConsole();
                     }
 
@@ -117,7 +125,15 @@ namespace JobsServer
                                 DashboardJobListLimit = 50000,
                                 TransactionTimeout = TimeSpan.FromMinutes(1),
                             })).UseConsole()//使用日志展示
-                            .UseHangfireHttpJob();//启用http任务
+                            .UseHangfireHttpJob(new HangfireHttpJobOptions()
+                            {
+                                SendToMailList = HangfireSettings.Instance.SendMailList,
+                                SendMailAddress = HangfireSettings.Instance.SendMailAddress,
+                                SMTPServerAddress = HangfireSettings.Instance.SMTPServerAddress,
+                                SMTPPort = HangfireSettings.Instance.SMTPPort,
+                                SMTPPwd = HangfireSettings.Instance.SMTPPwd,
+                                SMTPSubject = HangfireSettings.Instance.SMTPSubject
+                            });//启用http任务
                     }
 
                 }
