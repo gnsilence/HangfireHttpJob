@@ -55,7 +55,7 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         private static string SethtmlBody(string jobname,string url,string exception)
         {
-            var htmlbody = $@"<h3 align='center'>任务通知</h3>
+            var htmlbody = $@"<h3 align='center'>{HangfireHttpJobOptions.SMTPSubject}</h3>
                             <h3>执行时间：</h3>
                             <p>
                                 {DateTime.Now}
