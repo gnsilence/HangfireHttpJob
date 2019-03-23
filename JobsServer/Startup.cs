@@ -23,6 +23,8 @@ using Microsoft.AspNetCore.Http;
 using System.Net.Http;
 using HealthChecks.Uris;
 using Hangfire.SQLite;
+using Hangfire.Heartbeat;
+using Hangfire.Heartbeat.Server;
 
 namespace JobsServer
 {
@@ -55,6 +57,7 @@ namespace JobsServer
         }
         public static ConnectionMultiplexer Redis;
         public IConfiguration Configuration { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
             //添加健康检查地址
@@ -65,6 +68,8 @@ namespace JobsServer
             services.AddHangfire(
                 config =>
                 {
+                    //使用服务器资源监视
+                    config.UseHeartbeatPage(checkInterval: TimeSpan.FromSeconds(1));
                     //sqlite数据库，操作缓慢不建议使用
                     //config.UseSQLiteStorage($"Data Source={SqliteDbPath};", new SQLiteStorageOptions()
                     //{
@@ -84,7 +89,7 @@ namespace JobsServer
                         config.UseSqlServerStorage(HangfireSettings.Instance.HangfireSqlserverConnectionString, new Hangfire.SqlServer.SqlServerStorageOptions()
                         {
                             //每隔一小时检查过期job
-                            JobExpirationCheckInterval=TimeSpan.FromHours(1)
+                            JobExpirationCheckInterval = TimeSpan.FromHours(1)
                         })
                         .UseHangfireHttpJob(new HangfireHttpJobOptions()
                         {
@@ -101,12 +106,12 @@ namespace JobsServer
                     if (HangfireSettings.Instance.UseRedis)
                     {
                         //使用redis
-                        config.UseRedisStorage(Redis ,new Hangfire.Redis.RedisStorageOptions()
+                        config.UseRedisStorage(Redis, new Hangfire.Redis.RedisStorageOptions()
                         {
                             //任务过期检查频率
-                            ExpiryCheckInterval=TimeSpan.FromMinutes(30),
+                            ExpiryCheckInterval = TimeSpan.FromMinutes(30),
                             DeletedListSize = 1000,
-                            SucceededListSize=1000
+                            SucceededListSize = 1000
                         })
                         .UseHangfireHttpJob(new HangfireHttpJobOptions()
                         {
@@ -165,7 +170,10 @@ namespace JobsServer
                 ShutdownTimeout = TimeSpan.FromMinutes(30),//等待所有任务执行的时间当服务被关闭时
                 Queues = queues,//队列
                 WorkerCount = Math.Max(Environment.ProcessorCount, 20)//工作线程数，当前允许的最大线程，默认20
-            });
+            },
+            additionalProcesses: new[] { new SystemMonitor(checkInterval: TimeSpan.FromSeconds(1)) }
+            );
+
             app.UseHangfireDashboard("/job", new DashboardOptions
             {
                 AppPath = HangfireSettings.Instance.AppWebSite,//返回时跳转的地址

@@ -15,6 +15,7 @@
     <PackageReference Include="AspNetCore.HealthChecks.Publisher.Prometheus" Version="2.2.0" />
     <PackageReference Include="AspNetCore.HealthChecks.UI" Version="2.2.17" />
     <PackageReference Include="AspNetCore.HealthChecks.Uris" Version="2.2.2" />
+    <PackageReference Include="Hangfire.Heartbeat" Version="0.3.4" />
     <PackageReference Include="Hangfire.MySql.Core3" Version="1.0.0" />
     <PackageReference Include="Hangfire.SQLite.Core" Version="1.0.2" />
     <PackageReference Include="Hangfire.SqlServer" Version="1.6.22" />
