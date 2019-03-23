@@ -46,7 +46,34 @@ namespace Hangfire.HttpJob.Server
             }
             return HttpClient;
         }
-
+        /// <summary>
+        /// 邮件模板
+        /// </summary>
+        /// <param name="jobname"></param>
+        /// <param name="url"></param>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        private static string SethtmlBody(string jobname,string url,string exception)
+        {
+            var htmlbody = $@"<h3 align='center'>任务通知</h3>
+                            <h3>执行时间：</h3>
+                            <p>
+                                {DateTime.Now}
+                            </p>
+                            <h3>
+                                任务名称：<span> {jobname} </span><br/>
+                            </h3>
+                            <h3>
+                                请求路径：{url}
+                            </h3>
+                            <h3><span></span> 
+                                执行结果：<br/>
+                            </h3>
+                            <p>
+                                {exception}
+                            </p> ";
+            return htmlbody;
+        }
         public static HttpRequestMessage PrepareHttpRequestMessage(HttpJobItem item)
         {
             var request = new HttpRequestMessage(new HttpMethod(item.Method), item.Url);
@@ -65,6 +92,7 @@ namespace Hangfire.HttpJob.Server
 
         [AutomaticRetry(Attempts = 3)]
         [DisplayName("Api任务:{1}")]
+        [DisableConcurrentExecution(1)]
         [Queue("apis")]
         public static void Excute(HttpJobItem item, string jobName = null, PerformContext context = null)
         {
@@ -103,16 +131,26 @@ namespace Hangfire.HttpJob.Server
             {
                 context.SetTextColor(ConsoleTextColor.Red);
                 var builder = new BodyBuilder();
-                builder.TextBody = $"执行出错,任务名称【{item.JobName}】,错误详情：{ex}";
+                //builder.TextBody = $"执行出错,任务名称【{item.JobName}】,错误详情：{ex}";
+                builder.HtmlBody= SethtmlBody(jobName,item.Url,$"执行出错，错误详情:{ex.ToString()}");
                 mimeMessage.Body = builder.ToMessageBody();
-                var client = new SmtpClient();
-                client.Connect(HangfireHttpJobOptions.SMTPServerAddress, HangfireHttpJobOptions.SMTPPort, true);     //连接服务
-                client.AuthenticationMechanisms.Remove("XOAUTH2");
-                client.Authenticate(HangfireHttpJobOptions.SendMailAddress, HangfireHttpJobOptions.SMTPPwd); //验证账号密码
-                client.Send(mimeMessage);
-                client.Disconnect(true);
+                try
+                {
+                    var client = new SmtpClient();
+                    client.Connect(HangfireHttpJobOptions.SMTPServerAddress, HangfireHttpJobOptions.SMTPPort, true);     //连接服务
+                    client.AuthenticationMechanisms.Remove("XOAUTH2");
+                    client.Authenticate(HangfireHttpJobOptions.SendMailAddress, HangfireHttpJobOptions.SMTPPwd); //验证账号密码
+                    client.Send(mimeMessage);
+                    client.Disconnect(true);
+                }
+                catch (Exception ee)
+                {
+                    context.WriteLine($"邮件服务连接异常，异常为：{ee}");
+                }
+                
                 Logger.ErrorException("HttpJob.Excute", ex);
                 context.WriteLine($"执行出错：{ex.Message}");
+                throw;//不抛异常不会执行重试操作
             }
         }
 
