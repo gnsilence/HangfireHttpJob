@@ -16,8 +16,6 @@
     <PackageReference Include="AspNetCore.HealthChecks.UI" Version="2.2.17" />
     <PackageReference Include="AspNetCore.HealthChecks.Uris" Version="2.2.2" />
     <PackageReference Include="Hangfire.MySql.Core3" Version="1.0.0" />
-    <PackageReference Include="Hangfire.Redis" Version="2.0.1" />
-    <PackageReference Include="Hangfire.Redis.StackExchange.StrongName" Version="1.7.0" />
     <PackageReference Include="Hangfire.SQLite.Core" Version="1.0.2" />
     <PackageReference Include="Hangfire.SqlServer" Version="1.6.22" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
@@ -34,6 +32,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Hangfire.Dashboard.BasicAuthorization\Hangfire.Dashboard.BasicAuthorization.csproj" />
     <ProjectReference Include="..\Hangfire.HttpJob\Hangfire.HttpJob.csproj" />
+    <ProjectReference Include="..\Hangfire.Redis.StackExchange\Hangfire.Redis.StackExchange.csproj" />
   </ItemGroup>
 
   <ItemGroup>

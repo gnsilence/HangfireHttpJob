@@ -81,7 +81,11 @@ namespace JobsServer
                     if (HangfireSettings.Instance.UseSqlSerVer)
                     {
                         //使用SQL server
-                        config.UseSqlServerStorage(HangfireSettings.Instance.HangfireSqlserverConnectionString)
+                        config.UseSqlServerStorage(HangfireSettings.Instance.HangfireSqlserverConnectionString, new Hangfire.SqlServer.SqlServerStorageOptions()
+                        {
+                            //每隔一小时检查过期job
+                            JobExpirationCheckInterval=TimeSpan.FromHours(1)
+                        })
                         .UseHangfireHttpJob(new HangfireHttpJobOptions()
                         {
                             SendToMailList = HangfireSettings.Instance.SendMailList,
@@ -97,15 +101,21 @@ namespace JobsServer
                     if (HangfireSettings.Instance.UseRedis)
                     {
                         //使用redis
-                        config.UseRedisStorage(Redis)
+                        config.UseRedisStorage(Redis ,new Hangfire.Redis.RedisStorageOptions()
+                        {
+                            //任务过期检查频率
+                            ExpiryCheckInterval=TimeSpan.FromMinutes(30),
+                            DeletedListSize = 1000,
+                            SucceededListSize=1000
+                        })
                         .UseHangfireHttpJob(new HangfireHttpJobOptions()
                         {
-                            SendToMailList=HangfireSettings.Instance.SendMailList,
-                            SendMailAddress=HangfireSettings.Instance.SendMailAddress,
-                            SMTPServerAddress=HangfireSettings.Instance.SMTPServerAddress,
-                            SMTPPort=HangfireSettings.Instance.SMTPPort,
-                            SMTPPwd=HangfireSettings.Instance.SMTPPwd,
-                            SMTPSubject=HangfireSettings.Instance.SMTPSubject
+                            SendToMailList = HangfireSettings.Instance.SendMailList,
+                            SendMailAddress = HangfireSettings.Instance.SendMailAddress,
+                            SMTPServerAddress = HangfireSettings.Instance.SMTPServerAddress,
+                            SMTPPort = HangfireSettings.Instance.SMTPPort,
+                            SMTPPwd = HangfireSettings.Instance.SMTPPwd,
+                            SMTPSubject = HangfireSettings.Instance.SMTPSubject
                         })
                         .UseConsole();
                     }

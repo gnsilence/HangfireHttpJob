@@ -11,6 +11,7 @@ using System.Text;
 using MailKit;
 using MimeKit;
 using MailKit.Net.Smtp;
+using Hangfire.HttpJob.Support;
 
 namespace Hangfire.HttpJob.Server
 {
@@ -89,11 +90,11 @@ namespace Hangfire.HttpJob.Server
             return request;
         }
 
-
         [AutomaticRetry(Attempts = 3)]
         [DisplayName("Api任务:{1}")]
-        [DisableConcurrentExecution(1)]
+        [DisableConcurrentExecution(1,Order =1)]
         [Queue("apis")]
+        [JobFilter]
         public static void Excute(HttpJobItem item, string jobName = null, PerformContext context = null)
         {
             try

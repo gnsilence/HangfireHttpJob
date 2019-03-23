@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Dashboard.BasicAut
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob", "Hangfire.HttpJob\Hangfire.HttpJob.csproj", "{9CC45DEA-9CF3-403F-82B8-5AFA492AC42E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Redis.StackExchange", "Hangfire.Redis.StackExchange\Hangfire.Redis.StackExchange.csproj", "{11BAEFC2-2C2C-434B-BB72-FD2652291B13}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{9CC45DEA-9CF3-403F-82B8-5AFA492AC42E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9CC45DEA-9CF3-403F-82B8-5AFA492AC42E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9CC45DEA-9CF3-403F-82B8-5AFA492AC42E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11BAEFC2-2C2C-434B-BB72-FD2652291B13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11BAEFC2-2C2C-434B-BB72-FD2652291B13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11BAEFC2-2C2C-434B-BB72-FD2652291B13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11BAEFC2-2C2C-434B-BB72-FD2652291B13}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
