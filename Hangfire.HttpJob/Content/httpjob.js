@@ -6,7 +6,12 @@
         }
 
         HttpJob.prototype._initialize = function () {
-            
+            //更改控制面板标题
+            $(".navbar-brand").html("任务管理");
+            //更改hangfire版本显示替换为任意值
+            $("#footer ul li:first-child").html("Job管理V1.0");
+            //更改标题
+            document.title = "任务管理面板";
             /*
           生成corn表达式相关方法
            */
@@ -626,10 +631,7 @@
                     alert("error");
                 });
             });
-
-
             $('.jsoneditor-menu').hide();
-            $("#footer").hide();//隐藏底部显示
         };
 
         return HttpJob;

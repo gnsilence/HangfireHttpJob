@@ -25,22 +25,12 @@ using HealthChecks.Uris;
 using Hangfire.SQLite;
 using Hangfire.Heartbeat;
 using Hangfire.Heartbeat.Server;
+using Hangfire.Dashboard;
+using JobsServer.Hubs;
+using System.Net;
 
 namespace JobsServer
 {
-    public class RandomHealthCheck
-        : IHealthCheck
-    {
-
-        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
-        {
-            if (DateTime.UtcNow.Minute % 2 == 0)
-            {
-                return Task.FromResult(HealthCheckResult.Healthy());
-            }
-            return Task.FromResult(HealthCheckResult.Unhealthy(description: "出现异常"));
-        }
-    }
     public class Startup
     {
         ////sqlite数据库路径
@@ -100,7 +90,12 @@ namespace JobsServer
                             SMTPPwd = HangfireSettings.Instance.SMTPPwd,
                             SMTPSubject = HangfireSettings.Instance.SMTPSubject
                         })
-                        .UseConsole();
+                        .UseConsole(new ConsoleOptions()
+                        {
+                            BackgroundColor = "#000079"
+                        })
+                        .UseDashboardMetric(DashboardMetrics.RecurringJobCount)
+                        .UseDashboardMetric(DashboardMetrics.AwaitingCount);
                     }
 
                     if (HangfireSettings.Instance.UseRedis)
@@ -108,6 +103,8 @@ namespace JobsServer
                         //使用redis
                         config.UseRedisStorage(Redis, new Hangfire.Redis.RedisStorageOptions()
                         {
+                            //活动服务器超时时间
+                            InvisibilityTimeout = TimeSpan.FromHours(1),
                             //任务过期检查频率
                             ExpiryCheckInterval = TimeSpan.FromMinutes(30),
                             DeletedListSize = 1000,
@@ -122,7 +119,16 @@ namespace JobsServer
                             SMTPPwd = HangfireSettings.Instance.SMTPPwd,
                             SMTPSubject = HangfireSettings.Instance.SMTPSubject
                         })
-                        .UseConsole();
+                        .UseConsole(new ConsoleOptions()
+                        {
+                            BackgroundColor = "#000079"
+                        })
+                        .UseDashboardMetric(DashboardMetrics.AwaitingCount)
+                        .UseDashboardMetric(DashboardMetrics.ProcessingCount)
+                        .UseDashboardMetric(DashboardMetrics.RecurringJobCount)
+                        .UseDashboardMetric(DashboardMetrics.RetriesCount)
+                        .UseDashboardMetric(DashboardMetrics.FailedCount)
+                        .UseDashboardMetric(DashboardMetrics.ServerCount);
                     }
 
                     if (HangfireSettings.Instance.UseMySql)
@@ -139,7 +145,10 @@ namespace JobsServer
                                 PrepareSchemaIfNecessary = false,
                                 DashboardJobListLimit = 50000,
                                 TransactionTimeout = TimeSpan.FromMinutes(1),
-                            })).UseConsole()//使用日志展示
+                            })).UseConsole(new ConsoleOptions()
+                            {
+                                BackgroundColor = "#000079"
+                            })//使用日志展示
                             .UseHangfireHttpJob(new HangfireHttpJobOptions()
                             {
                                 SendToMailList = HangfireSettings.Instance.SendMailList,
@@ -153,6 +162,52 @@ namespace JobsServer
 
                 }
                 );
+            #region SignalR
+            
+            services.AddSignalR();
+            //设置redis底板
+            //.AddRedis(HangfireSettings.Instance.HangfireRedisConnectionString, options =>
+            //{
+            //    options.Configuration.DefaultDatabase = 5;
+            //    options.Configuration.ChannelPrefix = "MySignalR";
+            //    options.Configuration.ConnectRetry = 3;
+            //    options.Configuration.ReconnectRetryPolicy = new ExponentialRetry(5000);
+            //    options.Configuration.ConnectTimeout = 60000;
+            //    //options.ConnectionFactory= async writer =>
+            //    //{
+            //    //    var config = new ConfigurationOptions
+            //    //    {
+            //    //        AbortOnConnectFail = false
+            //    //    };
+            //    //    config.EndPoints.Add(IPAddress.Loopback, 0);
+            //    //    config.SetDefaultPorts();
+            //    //    var connection = await ConnectionMultiplexer.ConnectAsync(config, writer);
+            //    //    connection.ConnectionFailed += (_, e) =>
+            //    //    {
+            //    //        Console.WriteLine("Connection to Redis failed.");
+            //    //    };
+
+            //    //    if (!connection.IsConnected)
+            //    //    {
+            //    //        Console.WriteLine("Did not connect to Redis.");
+            //    //    }
+
+            //    //    return connection;
+            //    //};
+
+            //});
+            //跨域设置
+            services.AddCors(options => options.AddPolicy("CorsPolicy",
+            builder =>
+            {
+                builder.AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowAnyOrigin()
+                .AllowCredentials();
+            }));
+            //依赖注入
+            services.AddSingleton<IServiceProvider, ServiceProvider>();
+            #endregion
             services.AddHealthChecksUI();
             services.AddMvc();
         }
@@ -167,16 +222,18 @@ namespace JobsServer
             var queues = new[] { "default", "apis", "localjobs" };
             app.UseHangfireServer(new BackgroundJobServerOptions()
             {
-                ShutdownTimeout = TimeSpan.FromMinutes(30),//等待所有任务执行的时间当服务被关闭时
+                ShutdownTimeout = TimeSpan.FromMinutes(30),//超时时间
                 Queues = queues,//队列
                 WorkerCount = Math.Max(Environment.ProcessorCount, 20)//工作线程数，当前允许的最大线程，默认20
             },
+            //服务器资源检测频率
             additionalProcesses: new[] { new SystemMonitor(checkInterval: TimeSpan.FromSeconds(1)) }
             );
 
             app.UseHangfireDashboard("/job", new DashboardOptions
             {
                 AppPath = HangfireSettings.Instance.AppWebSite,//返回时跳转的地址
+                DisplayStorageConnectionString = false,//是否显示数据库连接信息
                 Authorization = new[] { new BasicAuthAuthorizationFilter(new BasicAuthAuthorizationFilterOptions
                 {
                     RequireSsl = false,//是否启用ssl验证，即https
@@ -218,6 +275,15 @@ namespace JobsServer
                 setup.UIPath = "/hc"; // 健康检查的UI面板地址
                 setup.ApiPath = "/hc-api"; // 用于api获取json的检查数据
             });
+            #region SignalR
+            //跨域支持
+            app.UseCors("CorsPolicy");
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<SignalrHubs>("/Hubs");
+            });
+            app.UseWebSockets();
+            #endregion
             app.UseMvc();
         }
     }

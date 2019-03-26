@@ -30,4 +30,8 @@
     <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CommonUtils\CommonUtils.csproj" />
+  </ItemGroup>
+
 </Project>

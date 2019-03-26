@@ -158,8 +158,8 @@ namespace Hangfire.HttpJob.Server
         {
             var data = JobStorage.Current.GetConnection().GetAllEntriesFromHash($"recurring-job:{name}");
             var jobinfo = JsonConvert.DeserializeObject<JobInfo>(data.Where(p => p.Key == "Job").ToList().FirstOrDefault().Value);
-            var args = jobinfo.Arguments.Replace("\\", "");
-            var httpjob = JsonConvert.DeserializeObject<RecurringJobItem>(args.Substring(args.IndexOf("{"), args.LastIndexOf("}") - 1));
+            var args = jobinfo.Arguments.Replace(@"\", "").Replace("\"{","{").Replace("}\"","}");
+            var httpjob = JsonConvert.DeserializeObject<RecurringJobItem>(args.Substring(args.IndexOf("{"), args.LastIndexOf("}")));
             return JsonConvert.SerializeObject(httpjob);
         }
 

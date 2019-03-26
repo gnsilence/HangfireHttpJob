@@ -24,7 +24,7 @@ namespace Hangfire.HttpJob.Server
         /// <summary>
         /// 参数
         /// </summary>
-        public string Data { get; set; }
+        public object Data { get; set; }
 
         public string ContentType { get; set; }
 
@@ -57,7 +57,7 @@ namespace Hangfire.HttpJob.Server
         /// <summary>
         /// 参数
         /// </summary>
-        public string Data { get; set; }
+        public object Data { get; set; }
 
         public string ContentType { get; set; }
 

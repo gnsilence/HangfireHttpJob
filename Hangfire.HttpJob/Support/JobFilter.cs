@@ -1,16 +1,19 @@
 ﻿using Hangfire.Client;
 using Hangfire.Common;
+using Hangfire.HttpJob.Server;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Hangfire.HttpJob.Support
 {
-    public class JobFilter: JobFilterAttribute,
+    public class JobFilter : JobFilterAttribute,
      IClientFilter, IServerFilter, IElectStateFilter, IApplyStateFilter
     {
         private static readonly ILog Logger = LogProvider.For<JobFilter>();
@@ -20,7 +23,7 @@ namespace Hangfire.HttpJob.Support
             "创建任务 `{0}` id为 `{1}`",
             filterContext.Job.Method.Name,
             filterContext.BackgroundJob?.Id);
-            
+
         }
 
         public void OnCreating(CreatingContext filterContext)
@@ -49,7 +52,6 @@ namespace Hangfire.HttpJob.Support
             var failedState = context.CandidateState as FailedState;
             if (failedState != null)
             {
-                
                 Logger.WarnFormat(
                     "任务 `{0}` 执行失败，异常为 `{1}`",
                     context.BackgroundJob.Id,
