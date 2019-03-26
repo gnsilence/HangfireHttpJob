@@ -187,7 +187,7 @@ namespace Hangfire.HttpJob.Server
                 }
                 else
                 {
-                    client.SendAsync(httpMesage).GetAwaiter().GetResult();
+                    httpResponse=client.SendAsync(httpMesage).GetAwaiter().GetResult();
                 }
                 HttpContent content = httpResponse.Content;
                 string result = content.ReadAsStringAsync().GetAwaiter().GetResult();
