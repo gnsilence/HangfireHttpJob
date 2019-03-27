@@ -13,12 +13,13 @@ using MimeKit;
 using MailKit.Net.Smtp;
 using Hangfire.HttpJob.Support;
 using CommonUtils;
+using NLog;
 
 namespace Hangfire.HttpJob.Server
 {
     internal class HttpJob
     {
-        private static readonly ILog Logger = LogProvider.For<HttpJob>();
+        private static readonly Logger logger = new LogFactory().GetCurrentClassLogger();
         public static HangfireHttpJobOptions HangfireHttpJobOptions;
         private static MimeMessage mimeMessage;
         /// <summary>
@@ -52,7 +53,7 @@ namespace Hangfire.HttpJob.Server
             }
             catch (Exception ee)
             {
-                Logger.Info($"邮件服务异常，异常为：{ee}");
+                logger.Info($"邮件服务异常，异常为：{ee}");
                 return false;
                 //context.SetTextColor(ConsoleTextColor.Red);
                 //context.WriteLine($"邮件服务异常，异常为：{ee}");
@@ -74,7 +75,7 @@ namespace Hangfire.HttpJob.Server
 
             var HttpClient = new HttpClient(handler)
             {
-                Timeout = TimeSpan.FromMilliseconds(item.Timeout == 0 ? HangfireHttpJobOptions.GlobalHttpTimeOut : item.Timeout),
+                Timeout = TimeSpan.FromSeconds(item.Timeout == 0 ? HangfireHttpJobOptions.GlobalHttpTimeOut : item.Timeout),
             };
 
             if (!string.IsNullOrEmpty(item.BasicUserName) && !string.IsNullOrEmpty(item.BasicPassword))
@@ -159,9 +160,8 @@ namespace Hangfire.HttpJob.Server
 
         [AutomaticRetry(Attempts = 3, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
         [DisplayName("Api任务:{1}")]
-        [DisableConcurrentExecution(90)]
         [Queue("apis")]
-        [JobFilter]
+        [JobFilter(timeoutInSeconds:3600)]
         public static void Excute(HttpJobItem item, string jobName = null, PerformContext context = null)
         {
             try
@@ -204,7 +204,7 @@ namespace Hangfire.HttpJob.Server
                 {
                     SendEmail(item.JobName, item.Url, ex.ToString());
                 }
-                Logger.ErrorException("HttpJob.Excute", ex);
+                logger.Error(ex, "HttpJob.Excute");
                 context.WriteLine($"执行出错：{ex.Message}");
                 throw;//不抛异常不会执行重试操作
             }

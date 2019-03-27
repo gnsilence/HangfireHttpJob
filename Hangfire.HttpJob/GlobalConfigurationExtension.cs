@@ -27,7 +27,7 @@ namespace Hangfire.HttpJob
             DashboardRoutes.Routes.Append(cssPath, new EmbeddedResourceDispatcher(assembly, "Hangfire.HttpJob.Content.jsoneditor.css"));
             DashboardRoutes.Routes.Append(cssPath, new DynamicCssDispatcher(options));
 
-            if (options.GlobalHttpTimeOut < 2000) options.GlobalHttpTimeOut = 2000;
+            if (options.GlobalHttpTimeOut < 60) options.GlobalHttpTimeOut = 60;
             Server.HttpJob.HangfireHttpJobOptions = options;
 
             return config;

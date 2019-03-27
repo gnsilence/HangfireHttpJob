@@ -27,6 +27,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.4" />
+    <PackageReference Include="NLog" Version="4.6.0" />
+    <PackageReference Include="NLog.Config" Version="4.6.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,6 +48,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="C:\Users\admin\.nuget\packages\nlog.config\4.6.0\contentFiles\any\any\NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="HangfireDb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

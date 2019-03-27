@@ -5,7 +5,7 @@ namespace Hangfire.HttpJob
 {
     public class HangfireHttpJobOptions
     {
-        public int GlobalHttpTimeOut { get; set; } = 50000;
+        public int GlobalHttpTimeOut { get; set; } = 900;
         public string AddHttpJobButtonName { get; set; } = "新增计划任务";
         public string AddRecurringJobHttpJobButtonName { get; set; } = "添加周期任务";
         public string AddCronButtonName { get; set; } = "Cron表达式生成";
