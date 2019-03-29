@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Hangfire.HttpJob.Server;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,6 +33,8 @@ namespace JobsServer
             {
                 SendMailList.Add(p.Email);
             });
+            //绑定后台任务
+            Configuration.GetSection("BackWorker").Bind(backWorker);
         }
 
         /// <summary>
@@ -120,6 +123,14 @@ namespace JobsServer
         /// 接收者邮箱
         /// </summary>
         public List<string> SendMailList { get; set; } = new List<string>();
+        /// <summary>
+        /// 使用后台进程
+        /// </summary>
+        public bool UseBackWorker => Convert.ToBoolean(Configuration["UseBackWorker"]);
+        /// <summary>
+        /// 后台进程
+        /// </summary>
+        public BackWorker backWorker = new BackWorker();
         #endregion
     }
     public class Emails

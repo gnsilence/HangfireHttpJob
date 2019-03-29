@@ -28,6 +28,8 @@ using Hangfire.Heartbeat.Server;
 using Hangfire.Dashboard;
 using JobsServer.Hubs;
 using System.Net;
+using Hangfire.HttpJob.Support;
+using Hangfire.Server;
 
 namespace JobsServer
 {
@@ -163,7 +165,7 @@ namespace JobsServer
                 }
                 );
             #region SignalR
-            
+
             services.AddSignalR();
             //设置redis底板
             //.AddRedis(HangfireSettings.Instance.HangfireRedisConnectionString, options =>
@@ -227,8 +229,21 @@ namespace JobsServer
                 WorkerCount = Math.Max(Environment.ProcessorCount, 20)//工作线程数，当前允许的最大线程，默认20
             },
             //服务器资源检测频率
-            additionalProcesses: new[] { new SystemMonitor(checkInterval: TimeSpan.FromSeconds(1)) }
+            additionalProcesses: new IBackgroundProcess[] { new SystemMonitor(checkInterval: TimeSpan.FromSeconds(1)) }//new[] { new SystemMonitor(checkInterval: TimeSpan.FromSeconds(1))}
             );
+            #region 后台进程
+            if (HangfireSettings.Instance.UseBackWorker)
+            {
+                var listprocess = new List<IBackgroundProcess>();
+                listprocess.Add(new BackWorkers(HangfireSettings.Instance.backWorker));
+                app.UseHangfireServer(new BackgroundJobServerOptions()
+                {
+                    ServerName = $"{Environment.MachineName}-BackWorker",
+                    WorkerCount = 20,
+                    Queues = new[] { "test", "api", "demo" }
+                }, additionalProcesses: listprocess);
+            }
+            #endregion
 
             app.UseHangfireDashboard("/job", new DashboardOptions
             {
