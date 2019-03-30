@@ -12,6 +12,7 @@ namespace Hangfire.HttpJob
         public string EditRecurringJobButtonName { get; set; } = "编辑周期任务";
         public string CloseButtonName { get; set; } = "关闭";
         public string SubmitButtonName { get; set; } = "提交";
+        public string PauseJobButtonName { get; set; } = "停止或开始任务";
         public string ScheduledEndPath { get; set; } = "jobs/scheduled";
         public string RecurringEndPath { get; set; } = "/recurring";
         public string AddCron { get; set; } = "/recurring";

@@ -69,6 +69,16 @@ namespace Hangfire.HttpJob.Support
             var locktimeout = TimeSpan.FromSeconds(_timeoutInSeconds);
             try
             {
+                //判断任务是否被暂停
+                using (var connection = JobStorage.Current.GetConnection())
+                {
+                    var conts = connection.GetAllItemsFromSet($"JobPauseOf:{filterContext.BackgroundJob.Job.Args[1]}");
+                    if (conts.Contains("true"))
+                    {
+                        filterContext.Canceled = true;//任务被暂停不执行直接跳过
+                        return;
+                    }
+                }
                 //申请分布式锁
                 var distributedLock = filterContext.Connection.AcquireDistributedLock(jobresource, locktimeout);
                 filterContext.Items["DistributedLock"] = distributedLock;
@@ -110,29 +120,29 @@ namespace Hangfire.HttpJob.Support
         {
             DirectoryInfo dir = new DirectoryInfo($"{AppContext.BaseDirectory}/logs/");
             if (!dir.Exists) { return Task.CompletedTask; }
-           var taskdelete= Task.Run(() =>
-            {
-                try
-                {
-                    FileSystemInfo[] fileinfo = dir.GetFileSystemInfos();
-                    foreach (FileSystemInfo i in fileinfo)
-                    {
-                        if (i is DirectoryInfo)            //判断是否文件夹
-                        {
-                            var dridate = Convert.ToDateTime(i.Name);
-                            if ((DateTime.Now - dridate).TotalDays >= 20)
-                            {
-                                DirectoryInfo subdir = new DirectoryInfo(i.FullName);
-                                subdir.Delete(true);          //删除子目录和文件
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.Error(ex, "删除日志文件出错：");
-                }
-            });
+            var taskdelete = Task.Run(() =>
+              {
+                  try
+                  {
+                      FileSystemInfo[] fileinfo = dir.GetFileSystemInfos();
+                      foreach (FileSystemInfo i in fileinfo)
+                      {
+                          if (i is DirectoryInfo)            //判断是否文件夹
+                          {
+                              var dridate = Convert.ToDateTime(i.Name);
+                              if ((DateTime.Now - dridate).TotalDays >= 20)
+                              {
+                                  DirectoryInfo subdir = new DirectoryInfo(i.FullName);
+                                  subdir.Delete(true);          //删除子目录和文件
+                              }
+                          }
+                      }
+                  }
+                  catch (Exception ex)
+                  {
+                      logger.Error(ex, "删除日志文件出错：");
+                  }
+              });
             return Task.CompletedTask;
         }
     }

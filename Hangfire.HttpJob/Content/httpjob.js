@@ -450,8 +450,11 @@
 
             var button = '';
             var AddCronButton = '';
+            var PauseButton = '';
             var EditRecurringJobutton = '';
             var editgeturl = config.GetRecurringJobUrl;
+            var pauseurl = config.PauseJobUrl;
+            var getlisturl = config.GetJobListUrl;
             var divModel = '';
             var options = {
                 schema: {},
@@ -546,11 +549,18 @@
                     '</button>';
             }
 
+            //暂停和启用任务
+
+            PauseButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="执行中..." disabled id="PauseJob">' +
+                config.PauseJobButtonName +
+                '</button>';
+
             if (!button || !divModel) return;
             //新增按钮
             $('.page-header').append(button);
             $('.page-header').append(EditRecurringJobutton);
             $('.page-header').append(AddCronButton);
+            $('.btn-toolbar-top').append(PauseButton);
             $(document.body).append(divModel);
 
             var container = $('.editor_holder')[0];
@@ -576,7 +586,43 @@
                 $('#httpJobModal').modal('show');
             });
 
-
+            //暂停任务
+            $("#PauseJob").click(function () {
+                if (!$(".js-jobs-list-checkbox").is(':checked')) {
+                    alert("请选择要操作的任务"); return;
+                } else {
+                    $.ajax({
+                        type: "post",
+                        url: pauseurl,
+                        contentType: "application/json; charset=utf-8",
+                        data: JSON.stringify({ "JobName": $(".js-jobs-list-checkbox:checked").val(), "URL": "baseurl", "ContentType": "application/json" }),
+                        async: true,
+                        success: function (returndata) {
+                        }
+                    });
+                }
+            });
+            GetJobList();
+            function GetJobList() {
+                $.ajax({
+                    type: "post",
+                    url: getlisturl,
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({ "JobName": $(".js-jobs-list-checkbox:checked").val(), "URL": "baseurl", "ContentType": "application/json" }),
+                    async: true,
+                    success: function (returndata) {
+                        $(".table tbody").find('tr').each(function () {
+                            var tdArr = $(this).children();
+                            var ss = tdArr.eq(1).text();
+                            for (var i = 0; i < returndata.length; i++) {
+                                if (ss === returndata[i].Id) {
+                                    $(this).css("color", "red");
+                                }
+                            }
+                        });
+                    }
+                });
+            }
             //编辑任务
             $("#EditJob").click(function () {
                 if (!$(".js-jobs-list-checkbox").is(':checked')) {
@@ -599,7 +645,6 @@
                     });
                 }
             });
-
             //打开cron表达式页面
             $("#AddCron").click(function () {
                 window.location.href = config.AddCronUrl;

@@ -1,7 +1,9 @@
 ﻿using Hangfire.Dashboard;
 using Hangfire.Logging;
+using Hangfire.Storage;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -39,7 +41,14 @@ namespace Hangfire.HttpJob.Server
                     context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
                     return Task.FromResult(false);
                 }
-
+                if (op.ToLower() == "getjoblist")
+                {
+                    var joblist = GetRecurringJobs();
+                    context.Response.ContentType = "application/json";
+                    context.Response.StatusCode = (int)HttpStatusCode.OK;
+                    context.Response.WriteAsync(JsonConvert.SerializeObject(joblist));
+                    return Task.FromResult(true);
+                }
                 var jobItem = GetJobItem(context);
                 if (op.ToLower() == "getrecurringjob")
                 {
@@ -97,6 +106,9 @@ namespace Hangfire.HttpJob.Server
                             return Task.FromResult(false);
                         }
                         result = AddHttprecurringjob(jobItem);
+                        break;
+                    case "pausejob":
+                        result = PauseOrRestartJob(jobItem.JobName);
                         break;
                     default:
                         context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
@@ -159,7 +171,7 @@ namespace Hangfire.HttpJob.Server
             var data = JobStorage.Current.GetConnection().GetAllEntriesFromHash($"recurring-job:{name}");
             var jobinfo = JsonConvert.DeserializeObject<JobInfo>(data.Where(p => p.Key == "Job").ToList().FirstOrDefault().Value);
             //设置post请求时参数data的格式
-            var args = jobinfo.Arguments.Replace(@"\", "").Replace("\"{","{").Replace("}\"","}");
+            var args = jobinfo.Arguments.Replace(@"\", "").Replace("\"{", "{").Replace("}\"", "}");
             var httpjob = JsonConvert.DeserializeObject<RecurringJobItem>(args.Substring(args.IndexOf("{"), args.LastIndexOf("}")));
             return JsonConvert.SerializeObject(httpjob);
         }
@@ -182,7 +194,57 @@ namespace Hangfire.HttpJob.Server
                 return false;
             }
         }
+        /// <summary>
+        /// 暂停或者开始任务
+        /// </summary>
+        /// <param name="jobname"></param>
+        /// <returns></returns>
+        public bool PauseOrRestartJob(string jobname)
+        {
+            using (var connection = JobStorage.Current.GetConnection())
+            {
+                using (var tran = connection.CreateWriteTransaction())
+                {
+                    var conts = connection.GetAllItemsFromSet($"JobPauseOf:{jobname}");
+                    if (conts.Contains("true"))
+                    {
 
+                        tran.RemoveFromSet($"JobPauseOf:{jobname}", "true");
+                        tran.AddToSet($"JobPauseOf:{jobname}", "false");
+                        tran.Commit();
+                    }
+                    else
+                    {
+                        tran.RemoveFromSet($"JobPauseOf:{jobname}", "false");
+                        tran.AddToSet($"JobPauseOf:{jobname}", "true");
+                        tran.Commit();
+                    }
+                }
+            }
+            return true;
+        }
+        /// <summary>
+        /// 获取已经暂停的任务
+        /// </summary>
+        /// <returns></returns>
+        public List<PauseRecurringJob> GetRecurringJobs()
+        {
+            var pauselist = new List<PauseRecurringJob>();
+            using (var connection = JobStorage.Current.GetConnection())
+            {
+                var joblist = StorageConnectionExtensions.GetRecurringJobs(connection);
+                joblist.ForEach(k =>
+                {
+                    var conts = connection.GetAllItemsFromSet($"JobPauseOf:{k.Id}");
+                    if (conts.Contains("true"))
+                    {
+                        var pauseinfo = new PauseRecurringJob() { Id = k.Id };
+                        pauselist.Add(pauseinfo);
+                    }
+                });
+            }
+            return pauselist;
+        }
         /// <summary>
         /// 添加周期性作业
         /// </summary>
