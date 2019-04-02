@@ -342,7 +342,6 @@
                         value = value || "";
                         r += value + " ";
                     });
-
                     if (r) {
                         $result.val(r.trim());
                     }

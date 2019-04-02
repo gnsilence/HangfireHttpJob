@@ -36,7 +36,7 @@
             @*<li role="presentation" class="active">
                 <a href="#second" aria-controls="second" role="tab" data-toggle="tab">秒</a>
             </li>*@
-            <li role="presentation">
+            <li role="presentation" class="active">
                 <a href="#minute" aria-controls="minute" role="tab" data-toggle="tab">分钟</a>
             </li>
             <li role="presentation">
@@ -230,33 +230,33 @@
                             style="width:350px;" multiple></select>
                 </div>
 
-                @*<div class="radio">
+                <div class="radio">
                     <label>
-                        <input type="radio" name="dayType" value="NotAssigned">
+                        <input type="radio" name="daytype" value="notassigned">
                         不指定
                     </label>
                 </div>
 
                 <div class="radio">
                     <label>
-                        <input type="radio" name="dayType" value="RecentDays">
+                        <input type="radio" name="daytype" value="recentdays">
                         每月
-                        <input type="number" id="dayTypeRecentDays_1" value="">
+                        <input type="number" id="daytyperecentdays_1" value="">
                         号最近的那个工作日
                     </label>
                 </div>
                 <div class="radio">
                     <label>
-                        <input type="radio" name="dayType" value="LastDayOfMonth">
+                        <input type="radio" name="daytype" value="lastdayofmonth">
                         本月最后一天
                     </label>
                 </div>
                 <div class="radio">
                     <label>
-                        <input type="radio" name="dayType" value="LastDayOfMonthRecentDays">
+                        <input type="radio" name="daytype" value="lastdayofmonthrecentdays">
                         本月最后一个工作日
                     </label>
-                </div>*@
+                </div>
             </div>
 
 
@@ -351,7 +351,7 @@
                             style="width:350px;" multiple></select>
                 </div>
 
-                @*<div class="radio">
+                <div class="radio">
                     <label>
                         <input type="radio" name="weekType" value="NotAssigned">
                         不指定
@@ -364,7 +364,7 @@
                         <input type="number" id="weekTypeLastWeekOfMonth_1" value="1">
 
                     </label>
-                </div>*@
+                </div>
             </div>
 
 

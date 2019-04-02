@@ -1,204 +1,299 @@
-﻿
-/*!40101 SET NAMES utf8 */;
+﻿-- ----------------------------
 
-/*!40101 SET SQL_MODE=''*/;
+-- Table structure for `Job`
 
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-CREATE DATABASE /*!32312 IF NOT EXISTS*/`hangfire_fat` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
+-- ----------------------------
 
-USE `hangfire_fat`;
+CREATE TABLE `<tableprefix>_Job` (
 
-/*Table structure for table `aggregatedcounter` */
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
 
-DROP TABLE IF EXISTS `aggregatedcounter`;
+  `StateId` int(11) DEFAULT NULL,
 
-CREATE TABLE `aggregatedcounter` (
-  `Id` INT(11) NOT NULL AUTO_INCREMENT,
-  `Key` VARCHAR(100) NOT NULL,
-  `Value` INT(11) NOT NULL,
-  `ExpireAt` DATETIME DEFAULT NULL,
+  `StateName` varchar(20) DEFAULT NULL,
+
+  `InvocationData` longtext NOT NULL,
+
+  `Arguments` longtext NOT NULL,
+
+  `CreatedAt` datetime NOT NULL,
+
+  `ExpireAt` datetime DEFAULT NULL,
+
   PRIMARY KEY (`Id`),
-  UNIQUE KEY `IX_CounterAggregated_Key` (`Key`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
 
-/*Data for the table `aggregatedcounter` */
-
-/*Table structure for table `counter` */
-
-DROP TABLE IF EXISTS `counter`;
-
-CREATE TABLE `counter` (
-  `Id` INT(11) NOT NULL AUTO_INCREMENT,
-  `Key` VARCHAR(100) NOT NULL,
-  `Value` INT(11) NOT NULL,
-  `ExpireAt` DATETIME DEFAULT NULL,
-  PRIMARY KEY (`Id`),
-  KEY `IX_Counter_Key` (`Key`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
-
-/*Data for the table `counter` */
-
-/*Table structure for table `distributedlock` */
-
-DROP TABLE IF EXISTS `distributedlock`;
-
-CREATE TABLE `distributedlock` (
-  `Resource` VARCHAR(100) NOT NULL,
-  `CreatedAt` DATETIME(6) NOT NULL
-) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
-
-/*Data for the table `distributedlock` */
-
-/*Table structure for table `hash` */
-
-DROP TABLE IF EXISTS `hash`;
-
-CREATE TABLE `hash` (
-  `Id` INT(11) NOT NULL AUTO_INCREMENT,
-  `Key` VARCHAR(100) NOT NULL,
-  `Field` VARCHAR(40) NOT NULL,
-  `Value` LONGTEXT,
-  `ExpireAt` DATETIME(6) DEFAULT NULL,
-  PRIMARY KEY (`Id`),
-  UNIQUE KEY `IX_Hash_Key_Field` (`Key`,`Field`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
-
-/*Data for the table `hash` */
-
-/*Table structure for table `job` */
-
-DROP TABLE IF EXISTS `job`;
-
-CREATE TABLE `job` (
-  `Id` INT(11) NOT NULL AUTO_INCREMENT,
-  `StateId` INT(11) DEFAULT NULL,
-  `StateName` VARCHAR(20) DEFAULT NULL,
-  `InvocationData` LONGTEXT NOT NULL,
-  `Arguments` LONGTEXT NOT NULL,
-  `CreatedAt` DATETIME(6) NOT NULL,
-  `ExpireAt` DATETIME(6) DEFAULT NULL,
-  PRIMARY KEY (`Id`),
   KEY `IX_Job_StateName` (`StateName`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
 
-/*Data for the table `job` */
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-/*Table structure for table `jobparameter` */
 
-DROP TABLE IF EXISTS `jobparameter`;
 
-CREATE TABLE `jobparameter` (
-  `Id` INT(11) NOT NULL AUTO_INCREMENT,
-  `JobId` INT(11) NOT NULL,
-  `Name` VARCHAR(40) NOT NULL,
-  `Value` LONGTEXT,
+
+
+-- ----------------------------
+
+-- Table structure for `Counter`
+
+-- ----------------------------
+
+CREATE TABLE `<tableprefix>_Counter` (
+
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+
+  `Key` varchar(100) NOT NULL,
+
+  `Value` int(11) NOT NULL,
+
+  `ExpireAt` datetime DEFAULT NULL,
+
   PRIMARY KEY (`Id`),
-  UNIQUE KEY `IX_JobParameter_JobId_Name` (`JobId`,`Name`),
-  KEY `FK_JobParameter_Job` (`JobId`),
-  CONSTRAINT `FK_JobParameter_Job` FOREIGN KEY (`JobId`) REFERENCES `job` (`Id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
 
-/*Data for the table `jobparameter` */
+  KEY `IX_Counter_Key` (`Key`)
 
-/*Table structure for table `jobqueue` */
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-DROP TABLE IF EXISTS `jobqueue`;
 
-CREATE TABLE `jobqueue` (
-  `Id` INT(11) NOT NULL AUTO_INCREMENT,
-  `JobId` INT(11) NOT NULL,
-  `Queue` VARCHAR(50) NOT NULL,
-  `FetchedAt` DATETIME(6) DEFAULT NULL,
-  `FetchToken` VARCHAR(36) DEFAULT NULL,
+
+
+
+CREATE TABLE `<tableprefix>_AggregatedCounter` (
+
+	Id int(11) NOT NULL AUTO_INCREMENT,
+
+	`Key` varchar(100) NOT NULL,
+
+	`Value` int(11) NOT NULL,
+
+	ExpireAt datetime DEFAULT NULL,
+
+	PRIMARY KEY (`Id`),
+
+	UNIQUE KEY `IX_CounterAggregated_Key` (`Key`)
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
+
+
+-- ----------------------------
+
+-- Table structure for `DistributedLock`
+
+-- ----------------------------
+
+CREATE TABLE `<tableprefix>_DistributedLock` (
+
+  `Resource` varchar(100) NOT NULL,
+
+  `CreatedAt` datetime NOT NULL
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
+
+
+-- ----------------------------
+
+-- Table structure for `Hash`
+
+-- ----------------------------
+
+CREATE TABLE `<tableprefix>_Hash` (
+
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+
+  `Key` varchar(100) NOT NULL,
+
+  `Field` varchar(40) NOT NULL,
+
+  `Value` longtext,
+
+  `ExpireAt` datetime DEFAULT NULL,
+
   PRIMARY KEY (`Id`),
-  KEY `IX_JobQueue_QueueAndFetchedAt` (`Queue`,`FetchedAt`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
 
-/*Data for the table `jobqueue` */
+  UNIQUE KEY `IX_Hash_Key_Field` (`Key`,`Field`)
 
-/*Table structure for table `jobstate` */
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-DROP TABLE IF EXISTS `jobstate`;
 
-CREATE TABLE `jobstate` (
-  `Id` INT(11) NOT NULL AUTO_INCREMENT,
-  `JobId` INT(11) NOT NULL,
-  `Name` VARCHAR(20) NOT NULL,
-  `Reason` VARCHAR(100) DEFAULT NULL,
-  `CreatedAt` DATETIME(6) NOT NULL,
-  `Data` LONGTEXT,
+
+
+
+-- ----------------------------
+
+-- Table structure for `JobParameter`
+
+-- ----------------------------
+
+CREATE TABLE `<tableprefix>_JobParameter` (
+
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+
+  `JobId` int(11) NOT NULL,
+
+  `Name` varchar(40) NOT NULL,
+
+  `Value` longtext,
+
+
+
   PRIMARY KEY (`Id`),
-  KEY `FK_JobState_Job` (`JobId`),
-  CONSTRAINT `FK_JobState_Job` FOREIGN KEY (`JobId`) REFERENCES `job` (`Id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
 
-/*Data for the table `jobstate` */
+  CONSTRAINT `IX_JobParameter_JobId_Name` UNIQUE (`JobId`,`Name`),
 
-/*Table structure for table `list` */
+  KEY `FK_JobParameter_Job` (`JobId`)
 
-DROP TABLE IF EXISTS `list`;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `list` (
-  `Id` INT(11) NOT NULL AUTO_INCREMENT,
-  `Key` VARCHAR(100) NOT NULL,
-  `Value` LONGTEXT,
-  `ExpireAt` DATETIME(6) DEFAULT NULL,
+
+
+-- ----------------------------
+
+-- Table structure for `JobQueue`
+
+-- ----------------------------
+
+CREATE TABLE `<tableprefix>_JobQueue` (
+
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+
+  `JobId` int(11) NOT NULL,
+
+  `Queue` varchar(50) NOT NULL,
+
+  `FetchedAt` datetime DEFAULT NULL,
+
+  `FetchToken` varchar(36) DEFAULT NULL,
+
+  
+
+  PRIMARY KEY (`Id`),
+
+  INDEX `IX_JobQueue_QueueAndFetchedAt` (`Queue`,`FetchedAt`)
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
+-- ----------------------------
+
+-- Table structure for `JobState`
+
+-- ----------------------------
+
+CREATE TABLE `<tableprefix>_JobState` (
+
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+
+  `JobId` int(11) NOT NULL,
+
+  `Name` varchar(20) NOT NULL,
+
+  `Reason` varchar(100) DEFAULT NULL,
+
+  `CreatedAt` datetime NOT NULL,
+
+  `Data` longtext,
+
+  PRIMARY KEY (`Id`),
+
+  KEY `FK_JobState_Job` (`JobId`)
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
+-- ----------------------------
+
+-- Table structure for `Server`
+
+-- ----------------------------
+
+CREATE TABLE `<tableprefix>_Server` (
+
+  `Id` varchar(100) NOT NULL,
+
+  `Data` longtext NOT NULL,
+
+  `LastHeartbeat` datetime DEFAULT NULL,
+
   PRIMARY KEY (`Id`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
 
-/*Data for the table `list` */
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-/*Table structure for table `server` */
 
-DROP TABLE IF EXISTS `server`;
 
-CREATE TABLE `server` (
-  `Id` VARCHAR(100) NOT NULL,
-  `Data` LONGTEXT NOT NULL,
-  `LastHeartbeat` DATETIME(6) DEFAULT NULL,
-  PRIMARY KEY (`Id`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
 
-/*Data for the table `server` */
 
-/*Table structure for table `set` */
+-- ----------------------------
 
-DROP TABLE IF EXISTS `set`;
+-- Table structure for `Set`
 
-CREATE TABLE `set` (
-  `Id` INT(11) NOT NULL AUTO_INCREMENT,
-  `Key` VARCHAR(100) NOT NULL,
-  `Value` VARCHAR(255) NOT NULL,
-  `Score` FLOAT NOT NULL,
-  `ExpireAt` DATETIME DEFAULT NULL,
+-- ----------------------------
+
+CREATE TABLE `<tableprefix>_Set` (
+
+  `Id` int(11) NOT NULL AUTO_INCREMENT,
+
+  `Key` varchar(100) NOT NULL,
+
+  `Value` varchar(100) NOT NULL,
+
+  `Score` float NOT NULL,
+
+  `ExpireAt` datetime DEFAULT NULL,
+
   PRIMARY KEY (`Id`),
+
   UNIQUE KEY `IX_Set_Key_Value` (`Key`,`Value`)
-) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
 
-/*Data for the table `set` */
+) ENGINE=InnoDB  CHARSET=utf8mb4;
 
-/*Table structure for table `state` */
 
-DROP TABLE IF EXISTS `state`;
 
-CREATE TABLE `state` (
-  `Id` INT(11) NOT NULL AUTO_INCREMENT,
-  `JobId` INT(11) NOT NULL,
-  `Name` VARCHAR(20) NOT NULL,
-  `Reason` VARCHAR(100) DEFAULT NULL,
-  `CreatedAt` DATETIME(6) NOT NULL,
-  `Data` LONGTEXT,
-  PRIMARY KEY (`Id`),
-  KEY `FK_HangFire_State_Job` (`JobId`),
-  CONSTRAINT `FK_HangFire_State_Job` FOREIGN KEY (`JobId`) REFERENCES `job` (`Id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
 
-/*Data for the table `state` */
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+
+CREATE TABLE `<tableprefix>_State`
+
+(
+
+	Id int(11) NOT NULL AUTO_INCREMENT,
+
+	JobId int(11) NOT NULL,
+
+	Name varchar(20) NOT NULL,
+
+	Reason varchar(100) NULL,
+
+	CreatedAt datetime NOT NULL,
+
+	Data longtext NULL,
+
+	PRIMARY KEY (`Id`),
+
+	KEY `FK_HangFire_State_Job` (`JobId`)
+
+) ENGINE=InnoDB  CHARSET=utf8mb4;
+
+
+
+CREATE TABLE `<tableprefix>_List`
+
+(
+
+	`Id` int(11) NOT NULL AUTO_INCREMENT,
+
+	`Key` varchar(100) NOT NULL,
+
+	`Value` longtext NULL,
+
+	`ExpireAt` datetime NULL,
+
+	PRIMARY KEY (`Id`)
+
+) ENGINE=InnoDB  CHARSET=utf8mb4;

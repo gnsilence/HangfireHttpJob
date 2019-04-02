@@ -81,7 +81,8 @@ namespace JobsServer
                         config.UseSqlServerStorage(HangfireSettings.Instance.HangfireSqlserverConnectionString, new Hangfire.SqlServer.SqlServerStorageOptions()
                         {
                             //每隔一小时检查过期job
-                            JobExpirationCheckInterval = TimeSpan.FromHours(1)
+                            JobExpirationCheckInterval = TimeSpan.FromHours(1),
+                            QueuePollInterval=TimeSpan.FromSeconds(1),
                         })
                         .UseHangfireHttpJob(new HangfireHttpJobOptions()
                         {
@@ -140,8 +141,9 @@ namespace JobsServer
                             HangfireSettings.Instance.HangfireMysqlConnectionString,
                             new MySqlStorageOptions
                             {
+                                TablePrefix="hangfire",
                                 TransactionIsolationLevel = IsolationLevel.ReadCommitted,
-                                QueuePollInterval = TimeSpan.FromSeconds(15),
+                                QueuePollInterval = TimeSpan.FromSeconds(1),
                                 JobExpirationCheckInterval = TimeSpan.FromHours(1),
                                 CountersAggregateInterval = TimeSpan.FromMinutes(5),
                                 PrepareSchemaIfNecessary = false,
@@ -224,6 +226,7 @@ namespace JobsServer
             var queues = new[] { "default", "apis", "localjobs" };
             app.UseHangfireServer(new BackgroundJobServerOptions()
             {
+                SchedulePollingInterval=TimeSpan.FromSeconds(1),
                 ShutdownTimeout = TimeSpan.FromMinutes(30),//超时时间
                 Queues = queues,//队列
                 WorkerCount = Math.Max(Environment.ProcessorCount, 20)//工作线程数，当前允许的最大线程，默认20

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netstandard1.6</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Add ApiJob To Hangfire Use Redis,Sqlserver,Mysql,Storage and install as a windows server,Extended to the original author by Hangfire.httpjob 1.0.2 </Description>
     <PackageLicenseUrl>https://github.com/gnsilence/HangfireHttpJob</PackageLicenseUrl>
@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hangfire.AspNetCore" Version="1.6.22" />
-    <PackageReference Include="Hangfire.Console" Version="1.3.10" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.0" />
+    <PackageReference Include="Hangfire.Console" Version="1.4.2" />
     <PackageReference Include="MailKit" Version="2.1.3" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.1.2" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
@@ -34,6 +34,21 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CommonUtils\CommonUtils.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Dashboard\Pages\CornJobsPage.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CornJobsPage.cshtml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Dashboard\Pages\CornJobsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>CornJobsPage.generated.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
 </Project>
