@@ -77,12 +77,13 @@ namespace JobsServer
 
                     if (HangfireSettings.Instance.UseSqlSerVer)
                     {
+                        
                         //使用SQL server
-                        config.UseSqlServerStorage(HangfireSettings.Instance.HangfireSqlserverConnectionString, new Hangfire.SqlServer.SqlServerStorageOptions()
+                        _ = config.UseSqlServerStorage(HangfireSettings.Instance.HangfireSqlserverConnectionString, new Hangfire.SqlServer.SqlServerStorageOptions()
                         {
                             //每隔一小时检查过期job
                             JobExpirationCheckInterval = TimeSpan.FromHours(1),
-                            QueuePollInterval=TimeSpan.FromSeconds(1),
+                            QueuePollInterval = TimeSpan.FromSeconds(1)
                         })
                         .UseHangfireHttpJob(new HangfireHttpJobOptions()
                         {
@@ -229,7 +230,7 @@ namespace JobsServer
                 SchedulePollingInterval=TimeSpan.FromSeconds(1),//秒级任务需要配置短点，一般任务可以配置默认时间，默认15秒
                 ShutdownTimeout = TimeSpan.FromMinutes(30),//超时时间
                 Queues = queues,//队列
-                WorkerCount = Math.Max(Environment.ProcessorCount, 20)//工作线程数，当前允许的最大线程，默认20
+                WorkerCount = Math.Max(Environment.ProcessorCount, 40)//工作线程数，当前允许的最大线程，默认20
             },
             //服务器资源检测频率
             additionalProcesses: new IBackgroundProcess[] { new SystemMonitor(checkInterval: TimeSpan.FromSeconds(1)) }//new[] { new SystemMonitor(checkInterval: TimeSpan.FromSeconds(1))}
@@ -237,8 +238,10 @@ namespace JobsServer
             #region 后台进程
             if (HangfireSettings.Instance.UseBackWorker)
             {
-                var listprocess = new List<IBackgroundProcess>();
-                listprocess.Add(new BackWorkers(HangfireSettings.Instance.backWorker));
+                var listprocess = new List<IBackgroundProcess>
+                {
+                    new BackWorkers(HangfireSettings.Instance.backWorker)
+                };
                 app.UseHangfireServer(new BackgroundJobServerOptions()
                 {
                     ServerName = $"{Environment.MachineName}-BackWorker",
@@ -269,17 +272,19 @@ namespace JobsServer
                 }
             });
             //重写json报告数据，可用于远程调用获取健康检查结果
-            var options = new HealthCheckOptions();
-            options.ResponseWriter = async (c, r) =>
+            var options = new HealthCheckOptions
             {
-                c.Response.ContentType = "application/json";
-
-                var result = JsonConvert.SerializeObject(new
+                ResponseWriter = async (c, r) =>
                 {
-                    status = r.Status.ToString(),
-                    errors = r.Entries.Select(e => new { key = e.Key, value = e.Value.Status.ToString() })
-                });
-                await c.Response.WriteAsync(result);
+                    c.Response.ContentType = "application/json";
+
+                    var result = JsonConvert.SerializeObject(new
+                    {
+                        status = r.Status.ToString(),
+                        errors = r.Entries.Select(e => new { key = e.Key, value = e.Value.Status.ToString() })
+                    });
+                    await c.Response.WriteAsync(result);
+                }
             };
 
             app.UseHealthChecks("/healthz", new HealthCheckOptions()

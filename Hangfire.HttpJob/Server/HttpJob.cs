@@ -17,7 +17,7 @@ using NLog;
 
 namespace Hangfire.HttpJob.Server
 {
-    internal class HttpJob
+    public class HttpJob
     {
         private static readonly Logger logger = new LogFactory().GetCurrentClassLogger();
         public static HangfireHttpJobOptions HangfireHttpJobOptions;
