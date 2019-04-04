@@ -26,6 +26,7 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Redis" Version="1.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.1.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Kubernetes.Tools.Targets" Version="1.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.4" />
     <PackageReference Include="NLog" Version="4.6.0" />
     <PackageReference Include="NLog.Config" Version="4.6.0" />
