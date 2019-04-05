@@ -157,11 +157,16 @@ namespace Hangfire.HttpJob.Server
             }
             return request;
         }
-
-        [AutomaticRetry(Attempts = 3, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
+        /// <summary>
+        /// 执行任务，DelaysInSeconds(重试时间间隔/单位秒)
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="jobName"></param>
+        /// <param name="context"></param>
+        [AutomaticRetry(Attempts = 3, DelaysInSeconds = new[] { 30, 60, 90 }, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
         [DisplayName("Api任务:{1}")]
         [Queue("apis")]
-        [JobFilter(timeoutInSeconds:3600)]
+        [JobFilter(timeoutInSeconds: 3600)]
         public static void Excute(HttpJobItem item, string jobName = null, PerformContext context = null)
         {
             try
@@ -187,7 +192,7 @@ namespace Hangfire.HttpJob.Server
                 }
                 else
                 {
-                    httpResponse=client.SendAsync(httpMesage).GetAwaiter().GetResult();
+                    httpResponse = client.SendAsync(httpMesage).GetAwaiter().GetResult();
                 }
                 HttpContent content = httpResponse.Content;
                 string result = content.ReadAsStringAsync().GetAwaiter().GetResult();

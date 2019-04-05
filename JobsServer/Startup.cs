@@ -44,7 +44,15 @@ namespace JobsServer
             Configuration = configuration;
             if (HangfireSettings.Instance.UseRedis)
             {
+                //ConfigurationOptions configurationOptions = new ConfigurationOptions();
+                //configurationOptions.EndPoints.Add("127.0.0.1",6379);
+                //configurationOptions.SyncTimeout = 50000;
+                //configurationOptions.Password = "abc@123";
+                //configurationOptions.EndPoints.Add("127.0.0.1", 6380);
+                //configurationOptions.ServiceName = "mymaster";
+                //configurationOptions.AllowAdmin = true;
                 Redis = ConnectionMultiplexer.Connect(HangfireSettings.Instance.HangfireRedisConnectionString);
+                //Redis = ConnectionMultiplexer.Connect(configurationOptions);
             }
         }
         public static ConnectionMultiplexer Redis;
@@ -77,7 +85,7 @@ namespace JobsServer
 
                     if (HangfireSettings.Instance.UseSqlSerVer)
                     {
-                        
+
                         //使用SQL server
                         _ = config.UseSqlServerStorage(HangfireSettings.Instance.HangfireSqlserverConnectionString, new Hangfire.SqlServer.SqlServerStorageOptions()
                         {
@@ -107,12 +115,14 @@ namespace JobsServer
                         //使用redis
                         config.UseRedisStorage(Redis, new Hangfire.Redis.RedisStorageOptions()
                         {
+                            FetchTimeout=TimeSpan.FromMinutes(5),
+                            Prefix = "{hangfire}:",
                             //活动服务器超时时间
                             InvisibilityTimeout = TimeSpan.FromHours(1),
                             //任务过期检查频率
-                            ExpiryCheckInterval = TimeSpan.FromMinutes(30),
-                            DeletedListSize = 1000,
-                            SucceededListSize = 1000
+                            ExpiryCheckInterval = TimeSpan.FromHours(1),
+                            DeletedListSize = 10000,
+                            SucceededListSize = 10000
                         })
                         .UseHangfireHttpJob(new HangfireHttpJobOptions()
                         {
@@ -142,7 +152,7 @@ namespace JobsServer
                             HangfireSettings.Instance.HangfireMysqlConnectionString,
                             new MySqlStorageOptions
                             {
-                                TablePrefix="hangfire",
+                                TablePrefix = "hangfire",
                                 TransactionIsolationLevel = IsolationLevel.ReadCommitted,//实物隔离级别，默认为读取已提交
                                 QueuePollInterval = TimeSpan.FromSeconds(1),//队列检测频率，秒级任务需要配置短点，一般任务可以配置默认时间
                                 JobExpirationCheckInterval = TimeSpan.FromHours(1),//作业到期检查间隔（管理过期记录）。默认值为1小时
@@ -227,7 +237,8 @@ namespace JobsServer
             var queues = new[] { "default", "apis", "localjobs" };
             app.UseHangfireServer(new BackgroundJobServerOptions()
             {
-                SchedulePollingInterval=TimeSpan.FromSeconds(1),//秒级任务需要配置短点，一般任务可以配置默认时间，默认15秒
+                ServerTimeout=TimeSpan.FromMinutes(4),
+                SchedulePollingInterval = TimeSpan.FromSeconds(1),//秒级任务需要配置短点，一般任务可以配置默认时间，默认15秒
                 ShutdownTimeout = TimeSpan.FromMinutes(30),//超时时间
                 Queues = queues,//队列
                 WorkerCount = Math.Max(Environment.ProcessorCount, 40)//工作线程数，当前允许的最大线程，默认20
@@ -255,6 +266,11 @@ namespace JobsServer
             {
                 AppPath = HangfireSettings.Instance.AppWebSite,//返回时跳转的地址
                 DisplayStorageConnectionString = false,//是否显示数据库连接信息
+                IsReadOnlyFunc = Context =>
+                {
+                   
+                    return false;
+                },
                 Authorization = new[] { new BasicAuthAuthorizationFilter(new BasicAuthAuthorizationFilterOptions
                 {
                     RequireSsl = false,//是否启用ssl验证，即https
@@ -266,6 +282,41 @@ namespace JobsServer
                         {
                             Login = HangfireSettings.Instance.LoginUser,//登录账号
                             PasswordClear =  HangfireSettings.Instance.LoginPwd//登录密码
+                        }
+                    }
+                })
+                }
+            });
+            //只读面板，只能读取不能操作
+            app.UseHangfireDashboard("/job-read", new DashboardOptions
+            {
+                AppPath = "#",//返回时跳转的地址
+                DisplayStorageConnectionString = false,//是否显示数据库连接信息
+                IsReadOnlyFunc = Context =>
+                {
+                    return true;
+                },
+                Authorization = new[] { new BasicAuthAuthorizationFilter(new BasicAuthAuthorizationFilterOptions
+                {
+                    RequireSsl = false,//是否启用ssl验证，即https
+                    SslRedirect = false,
+                    LoginCaseSensitive = true,
+                    Users = new []
+                    {                    
+                        new BasicAuthAuthorizationUser
+                        {
+                            Login = "read",
+                            PasswordClear = "only"
+                        },
+                        new BasicAuthAuthorizationUser
+                        {
+                            Login = "test",
+                            PasswordClear = "123456"
+                        },
+                        new BasicAuthAuthorizationUser
+                        {
+                            Login = "guest",
+                            PasswordClear = "123@123"
                         }
                     }
                 })

@@ -38,10 +38,10 @@ namespace Hangfire.HttpJob.Dashboard
 
                  .AppendFormat("hangFire.httpjobConfig.PauseJobUrl = '{0}/httpjob?op=PauseJob';", context.Request.PathBase)
                  .AppendFormat("hangFire.httpjobConfig.GetJobListUrl = '{0}/httpjob?op=GetJobList';", context.Request.PathBase)
-                .AppendFormat("hangFire.httpjobConfig.NeedAddNomalHttpJobButton = location.href.indexOf('{0}') >= 0;", _options.ScheduledEndPath)
-                .AppendFormat("hangFire.httpjobConfig.NeedAddRecurringHttpJobButton = location.href.indexOf('{0}') >= 0;;", _options.RecurringEndPath)
-                .AppendFormat("hangFire.httpjobConfig.NeedAddCronButton = location.href.indexOf('{0}') >= 0;;", _options.AddCron)
-                .AppendFormat("hangFire.httpjobConfig.NeedEditRecurringJobButton = location.href.indexOf('{0}') >= 0;;", _options.EditRecurringJobEndPath)
+                .AppendFormat("hangFire.httpjobConfig.NeedAddNomalHttpJobButton = location.href.indexOf('{0}') >= 0;", context.Request.PathBase.Contains("read")?"only-read":_options.ScheduledEndPath)
+                .AppendFormat("hangFire.httpjobConfig.NeedAddRecurringHttpJobButton = location.href.indexOf('{0}') >= 0;", context.Request.PathBase.Contains("read") ? "only-read" : _options.RecurringEndPath)
+                .AppendFormat("hangFire.httpjobConfig.NeedAddCronButton = location.href.indexOf('{0}') >= 0;;", context.Request.PathBase.Contains("read") ? "only-read" : _options.RecurringEndPath)
+                .AppendFormat("hangFire.httpjobConfig.NeedEditRecurringJobButton = location.href.indexOf('{0}') >= 0;", context.Request.PathBase.Contains("read") ? "only-read" : _options.RecurringEndPath)
                 .Append("})(window.Hangfire = window.Hangfire || {});")
                 .AppendLine();
 
