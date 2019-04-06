@@ -20,6 +20,17 @@ Windows服务部署
 Windows服务发布：直接发布webapi项目,在publish目录用管理员方式运行安装服务bat脚本，即可安装成功。
 
 可以多实例部署
+任务面板
+====
+![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/Dashboard.png)
+
+read-only 面板
+====
+![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/readonly.png)
+
+图表展示
+====
+![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/Charts.png)
 
 新增功能
 ====
