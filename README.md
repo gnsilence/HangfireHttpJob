@@ -34,6 +34,13 @@ read-only 面板
 ====
 ![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/Charts.png)
 
+计划任务，延迟指定分钟后执行，只执行一次
+====
+![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/planjob.png)
+
+通过接口添加任务，触发任务
+====
+![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/ApiForAddJob.png)
 新增功能
 ====
 
