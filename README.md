@@ -1,7 +1,7 @@
 使用说明
 ====
 1.数据库配置，sqlserver ,redis，mysql只需要在config中配置连接，就可以直接跑起来添加任务运行，
-其他数据库暂时用不到所以没试
+其他数据库暂时用不到所以没试,(推荐使用redis，可以使用redis集群+多实例部署实现故障迁移和高可用)
 
 2.运行方式，宿主程序为webapi，需要用配置文件中的website地址运行，打开才是hangfire面板
 
@@ -41,6 +41,12 @@ read-only 面板
 通过接口添加任务，触发任务
 ====
 ![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/ApiForAddJob.png)
+
+redis集群测试
+====
+![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/redisclusertest.png)
+
+
 新增功能
 ====
 
