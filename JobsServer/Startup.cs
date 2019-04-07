@@ -44,15 +44,7 @@ namespace JobsServer
             Configuration = configuration;
             if (HangfireSettings.Instance.UseRedis)
             {
-                //ConfigurationOptions configurationOptions = new ConfigurationOptions();
-                //configurationOptions.EndPoints.Add("127.0.0.1",6379);
-                //configurationOptions.SyncTimeout = 50000;
-                //configurationOptions.Password = "abc@123";
-                //configurationOptions.EndPoints.Add("127.0.0.1", 6380);
-                //configurationOptions.ServiceName = "mymaster";
-                //configurationOptions.AllowAdmin = true;
                 Redis = ConnectionMultiplexer.Connect(HangfireSettings.Instance.HangfireRedisConnectionString);
-                //Redis = ConnectionMultiplexer.Connect(configurationOptions);
             }
         }
         public static ConnectionMultiplexer Redis;
