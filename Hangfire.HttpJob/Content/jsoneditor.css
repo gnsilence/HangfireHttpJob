@@ -1,5 +1,19 @@
 /* reset styling (prevent conflicts with bootstrap, materialize.css, etc.) */
+#loaddata {
+    height: 24px;
+    width: 150px;
+    margin: 5px;
+    visibility: hidden;
+}
+#search-box {
+    padding: 5px;
+    margin-bottom: 5px;
+    width: 100%;
+}
 
+#search-box-div {
+    text-align: center;
+}
 div.jsoneditor input {
     height: auto;
     border: inherit;

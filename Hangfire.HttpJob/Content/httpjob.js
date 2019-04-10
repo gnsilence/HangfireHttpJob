@@ -466,7 +466,7 @@
             if (config.NeedAddNomalHttpJobButton) {
                 button =
                     '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float: inherit;margin-left: 10px" id="addHttpJob">' +
-                    config.AddHttpJobButtonName +
+                    '<span class="glyphicon glyphicon-plus"> ' + config.AddHttpJobButtonName + '</span>' +
                     '</button>';
                 divModel =
                     '<div class="modal inmodal" id="httpJobModal" tabindex="-1" role="dialog" aria-hidden="true">' +
@@ -493,7 +493,7 @@
             if (config.NeedAddRecurringHttpJobButton) {
                 button =
                     '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float: inherit;margin-left:10px" id="addRecurringHttpJob">' +
-                    config.AddRecurringJobHttpJobButtonName +
+                    '<span class="glyphicon glyphicon-plus"> ' + config.AddRecurringJobHttpJobButtonName + '</span>' +
                     '</button>';
                 divModel =
                     '<div class="modal inmodal" id="httpJobModal" tabindex="-1" role="dialog" aria-hidden="true">' +
@@ -520,7 +520,7 @@
             if (config.NeedEditRecurringJobButton) {
                 EditRecurringJobutton =
                     '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" id="EditJob">' +
-                    config.EditRecurringJobButtonName +
+                    '<span class="glyphicon glyphicon-pencil"> ' + config.EditRecurringJobButtonName + '</span>' +
                     '</button>';
                 divModel =
                     '<div class="modal inmodal" id="httpJobModal" tabindex="-1" role="dialog" aria-hidden="true">' +
@@ -544,14 +544,14 @@
 
             if (config.NeedAddCronButton) {
                 AddCronButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" id="AddCron">' +
-                    config.AddCronButtonName +
+                    '<span class="glyphicon glyphicon-time"> ' + config.AddCronButtonName + '</span>' +
                     '</button>';
             }
 
             //暂停和启用任务
 
             PauseButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" data-loading-text="执行中..." disabled id="PauseJob">' +
-                config.PauseJobButtonName +
+                '<span class="glyphicon glyphicon-stop"> ' + config.PauseJobButtonName + '</span>' +
                 '</button>';
 
             if (!button || !divModel) return;
@@ -616,6 +616,7 @@
                             for (var i = 0; i < returndata.length; i++) {
                                 if (ss === returndata[i].Id) {
                                     $(this).css("color", "red");
+                                    $(this).addClass("Paused");
                                 }
                             }
                         });
@@ -684,6 +685,63 @@
 
 })(window.Hangfire = window.Hangfire || {});
 
+//找出已经暂停的job
+var pausedjob = [];
+function GetPausedJobs() {
+    $(".Paused").each(function () {
+        pausedjob.push($(this).children().eq(1).text());
+    });
+}
+//搜索框拓展,在查找的记录中查询，无需查库
+var jobSearcher = new function () {
+
+    var createSearchBox = function () {
+        $('#search-box').closest('div').remove();
+        $('.js-jobs-list').prepend('<div class="search-box-div">' +
+            '<input type="text" id="search-box" placeholder="请输入任务名称...">' +
+            //'<img class="loader-img" src ="" />' +
+            '<span class="glyphicon glyphicon-search" id="loaddata"> 查找中...</span>' +
+            '<p id="total-items"></p>' +
+            '</div>');
+    };
+    this.Init = function () {
+        createSearchBox();
+    };
+    this.BindEvents = function () {
+        $('#search-box').bind('change', function (e) {
+            if (this.value.length === 0)
+                window.location.reload();
+            else
+                GetPausedJobs();
+            FilterJobs(this.value);
+        });
+    };
+    function FilterJobs(keyword) {
+        $('#loaddata').css('visibility', 'unset');
+        //在所有查询结果中查找满足条件的，模糊匹配时区分大小写
+        $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000000 .table-responsive table",
+            function () {
+                var table = $('.table-responsive').find('table');
+                var filtered = $(".page-header").text().substr(0, 4) === '定期作业' ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+                $(table).find('tbody tr').remove();
+                $(table).find('tbody').append(filtered);
+                //如果作业已经暂停，则用红色字体标识
+                $(table).find('tbody').find('tr').each(function () {
+                    var tdArr = $(this).children();
+                    var ss = tdArr.eq(1).text();
+                    for (var i = 0; i < pausedjob.length; i++) {
+                        if (ss === pausedjob[i]) {
+                            $(this).css("color", "red");
+                        }
+                    }
+                });
+                $('#loaddata').css('visibility', 'hidden');
+                $('#total-items').text("查询结果: " + filtered.length);
+            });
+    }
+};
+jobSearcher.Init();
+jobSearcher.BindEvents();
 function loadHttpJobModule() {
     Hangfire.httpjob = new Hangfire.HttpJob();
 }
