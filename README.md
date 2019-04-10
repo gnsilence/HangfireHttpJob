@@ -9,7 +9,7 @@
 
 4.任务类型：
 
-周期任务: 在周期任务面板，可以添加，编辑
+周期任务: 在周期任务面板，可以添加，编辑(注意不要编辑名称,目前是根据任务名称修改作业，更改名称后被认为是一个新的作业)
 
 计划任务：在作业中的计划下，可以新增计划任务，计划任务只会执行一次，可以设置执行时间
 
@@ -47,6 +47,9 @@ redis集群测试
 ![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/redisclusertest.png)
 
 
+新增搜索框功能，在完成的作业和周期作业中可以模糊搜索任务进行操作(模糊搜索区分大小写)
+====
+![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/SearchJobs.png)
 新增功能
 ====
 
@@ -72,4 +75,6 @@ redis集群测试
 但原有的在线表达式生成中部分表达式不能使用，需要自行测试表达式或者查看(https://github.com/HangfireIO/Cronos)
 
 2，通过宿主的webapi实现暴露接口，供外部程序添加，修改，删除任务，以及手动触发周期任务，还可以添加一个任务集合实现继承的连续任务
+
+3，新增任务搜索，可以在周期任务，完成的历史任务中根据任务名称搜索，区分大小写的模糊搜索，并且可以标识出是否被暂停
 
