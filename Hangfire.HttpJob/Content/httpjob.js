@@ -719,6 +719,30 @@ var jobSearcher = new function () {
     function FilterJobs(keyword) {
         $('#loaddata').css('visibility', 'unset');
         //在所有查询结果中查找满足条件的，模糊匹配时区分大小写
+        //只读面板下筛选数据操作
+        if (window.location.href.indexOf('read') >= 0) {
+            $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000000 .table-responsive table", 
+                function () {
+                    var table = $('.table-responsive').find('table');
+                    var filtered = $(".page-header").text().substr(0, 4) === '定期作业' ? $(table).find('td[class=min-width]:contains(' + keyword + ')').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+                    $(table).find('tbody tr').remove();
+                    $(table).find('tbody').append(filtered);
+                    //如果作业已经暂停，则用红色字体标识
+                    $(table).find('tbody').find('tr').each(function () {
+                        var tdArr = $(this).children();
+                        var ss = tdArr.eq(1).text();
+                        for (var i = 0; i < pausedjob.length; i++) {
+                            if (ss === pausedjob[i]) {
+                                $(this).css("color", "red");
+                            }
+                        }
+                    });
+                    $('#loaddata').css('visibility', 'hidden');
+                    $('#total-items').text("查询结果: " + filtered.length);
+                });
+            return;
+        }
+        //非只读数据下,筛选数据
         $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000000 .table-responsive table",
             function () {
                 var table = $('.table-responsive').find('table');
