@@ -50,6 +50,11 @@ redis集群测试
 新增搜索框功能，在完成的作业和周期作业中可以模糊搜索任务进行操作(模糊搜索区分大小写)
 ====
 ![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/SearchJobs.png)
+
+自身redis集群健康检查,方便查出哪个地址出现问题，也可以添加其他可以访问到的redis地址
+====
+![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/redischeck.png)
+
 新增功能
 ====
 
