@@ -57,6 +57,16 @@ namespace JobsServer
             {
                 services.AddHealthChecks().AddUrlGroup(new Uri(s.Uri), s.httpMethod.ToLower() == "post" ? HttpMethod.Post : HttpMethod.Get, $"{s.Uri}");
             });
+            HangfireSettings.Instance.HangfireRedisConnectionString.Split(",").ToList().ForEach(
+                k =>
+                {
+                    if (k.Contains(":"))
+                    {
+                        services.AddHealthChecks().AddRedis(k,$"Redis: {k}");
+                    }
+                }
+                );
+            //services.AddHealthChecks().AddRedis(HangfireSettings.Instance.HangfireRedisConnectionString);
             services.AddHangfire(
                 config =>
                 {
@@ -107,7 +117,7 @@ namespace JobsServer
                         //使用redis
                         config.UseRedisStorage(Redis, new Hangfire.Redis.RedisStorageOptions()
                         {
-                            FetchTimeout=TimeSpan.FromMinutes(5),
+                            FetchTimeout = TimeSpan.FromMinutes(5),
                             Prefix = "{hangfire}:",
                             //活动服务器超时时间
                             InvisibilityTimeout = TimeSpan.FromHours(1),
@@ -229,7 +239,7 @@ namespace JobsServer
             var queues = new[] { "default", "apis", "localjobs" };
             app.UseHangfireServer(new BackgroundJobServerOptions()
             {
-                ServerTimeout=TimeSpan.FromMinutes(4),
+                ServerTimeout = TimeSpan.FromMinutes(4),
                 SchedulePollingInterval = TimeSpan.FromSeconds(1),//秒级任务需要配置短点，一般任务可以配置默认时间，默认15秒
                 ShutdownTimeout = TimeSpan.FromMinutes(30),//超时时间
                 Queues = queues,//队列
@@ -260,7 +270,7 @@ namespace JobsServer
                 DisplayStorageConnectionString = false,//是否显示数据库连接信息
                 IsReadOnlyFunc = Context =>
                 {
-                   
+
                     return false;
                 },
                 Authorization = new[] { new BasicAuthAuthorizationFilter(new BasicAuthAuthorizationFilterOptions
@@ -294,7 +304,7 @@ namespace JobsServer
                     SslRedirect = false,
                     LoginCaseSensitive = true,
                     Users = new []
-                    {                    
+                    {
                         new BasicAuthAuthorizationUser
                         {
                             Login = "read",
