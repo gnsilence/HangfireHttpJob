@@ -55,6 +55,11 @@ redis集群测试
 ====
 ![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/redischeck.png)
 
+
+使用Apollo统一配置中心对hangfire多实例进行统一管理
+====
+![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/apollo.png)
+
 新增功能
 ====
 
@@ -82,4 +87,13 @@ redis集群测试
 2，通过宿主的webapi实现暴露接口，供外部程序添加，修改，删除任务，以及手动触发周期任务，还可以添加一个任务集合实现继承的连续任务
 
 3，新增任务搜索，可以在周期任务，完成的历史任务中根据任务名称搜索，区分大小写的模糊搜索，并且可以标识出是否被暂停
+
+4,升级部分类库到standa 2.0 ,升级hangfire到最新版1.7.1
+
+5,添加使用apollo配置中心的共用配置文件，配置方式:
+
+私有配置：每一个实例在apollo中添加一个应用，只配置私有命名空间application，只需要添加访问地址之类的实例私有配置
+
+共用配置：单独使用一个实例添加公共命名空间，无需引用这个应用id到系统，这样可以保证所有实例
+统一使用公有配置部分，而且可以实现各个实例运行不同的地址，端口，及其他私有配置。(共用配置如邮件通知,任务过期时间，健康检查地址)
 
