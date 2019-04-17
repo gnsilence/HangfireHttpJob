@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using CommonUtils;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.WindowsServices;
@@ -43,7 +44,7 @@ namespace JobsServer
         public static IWebHostBuilder CreateWebHostBuilder(string[] args)
         {
             return WebHost.CreateDefaultBuilder(args)
-                .UseUrls(HangfireSettings.Instance.ServiceAddress)//启用配置的地址
+                .UseUrls(HangfireSettings.Instance.UseApollo?ConfigSettings.Instance.ServiceAddress:HangfireSettings.Instance.ServiceAddress)//启用配置的地址
                 .ConfigureLogging((hostingContext, logging) =>
                 {
                     logging.AddEventLog();//启用系统事件日志，

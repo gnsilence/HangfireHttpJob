@@ -1,4 +1,5 @@
-﻿using Hangfire.Client;
+﻿using CommonUtils;
+using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.HttpJob.Server;
 using Hangfire.Logging;
@@ -94,7 +95,7 @@ namespace Hangfire.HttpJob.Support
         public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
             //设置过期时间，任务将在三天后过期，过期的任务会自动被扫描并删除
-            context.JobExpirationTimeout = TimeSpan.FromDays(3);
+            context.JobExpirationTimeout = TimeSpan.FromDays(ConfigSettings.Instance.UseApollo?ConfigSettings.Instance.AutomaticDelete:3);
         }
 
         public void OnStateElection(ElectStateContext context)
@@ -111,7 +112,7 @@ namespace Hangfire.HttpJob.Support
 
         public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-            context.JobExpirationTimeout = TimeSpan.FromDays(3);
+            context.JobExpirationTimeout = TimeSpan.FromDays(ConfigSettings.Instance.UseApollo ? ConfigSettings.Instance.AutomaticDelete : 3);
         }
         /// <summary>
         /// 清除日志文件，每隔20天按日期清理一次

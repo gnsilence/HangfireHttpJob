@@ -14,11 +14,16 @@ using MailKit.Net.Smtp;
 using Hangfire.HttpJob.Support;
 using CommonUtils;
 using NLog;
+using System.Collections.Generic;
 
 namespace Hangfire.HttpJob.Server
 {
     public class HttpJob
     {
+        /// <summary>
+        /// 是否使用apollo配置中心
+        /// </summary>
+        private static bool UseApollo = ConfigSettings.Instance.UseApollo;
         private static readonly Logger logger = new LogFactory().GetCurrentClassLogger();
         public static HangfireHttpJobOptions HangfireHttpJobOptions;
         private static MimeMessage mimeMessage;
@@ -34,20 +39,34 @@ namespace Hangfire.HttpJob.Server
             try
             {
                 mimeMessage = new MimeMessage();
-                mimeMessage.From.Add(new MailboxAddress(HangfireHttpJobOptions.SendMailAddress));
-                HangfireHttpJobOptions.SendToMailList.ForEach(k =>
+                mimeMessage.From.Add(new MailboxAddress(UseApollo ? ConfigSettings.Instance.SendMailAddress : HangfireHttpJobOptions.SendMailAddress));
+                List<Emails> SendMailList = new List<Emails>();
+                if (UseApollo)
                 {
-                    mimeMessage.To.Add(new MailboxAddress(k));
-                });
-                mimeMessage.Subject = HangfireHttpJobOptions.SMTPSubject;
+                    SendMailList = JsonConvert.DeserializeObject<List<Emails>>(ConfigSettings.Instance.SendMailList);
+                    SendMailList.ForEach(k =>
+                    {
+                        mimeMessage.To.Add(new MailboxAddress(k.Email));
+                    });
+                }
+                else
+                {
+                    HangfireHttpJobOptions.SendToMailList.ForEach(k =>
+                    {
+                        mimeMessage.To.Add(new MailboxAddress(k));
+                    });
+                }
+                mimeMessage.Subject = UseApollo ? ConfigSettings.Instance.SMTPSubject : HangfireHttpJobOptions.SMTPSubject;
                 var builder = new BodyBuilder();
                 //builder.TextBody = $"执行出错,任务名称【{item.JobName}】,错误详情：{ex}";
                 builder.HtmlBody = SethtmlBody(jobname, Url, $"执行出错，错误详情:{exception}");
                 mimeMessage.Body = builder.ToMessageBody();
                 var client = new SmtpClient();
-                client.Connect(HangfireHttpJobOptions.SMTPServerAddress, HangfireHttpJobOptions.SMTPPort, true);     //连接服务
+                client.Connect(UseApollo ? ConfigSettings.Instance.SMTPServerAddress : HangfireHttpJobOptions.SMTPServerAddress,
+                    UseApollo ? ConfigSettings.Instance.SMTPPort : HangfireHttpJobOptions.SMTPPort, true);     //连接服务
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
-                client.Authenticate(HangfireHttpJobOptions.SendMailAddress, HangfireHttpJobOptions.SMTPPwd); //验证账号密码
+                client.Authenticate(UseApollo ? ConfigSettings.Instance.SendMailAddress : HangfireHttpJobOptions.SendMailAddress,
+                   UseApollo ? ConfigSettings.Instance.SMTPPwd : HangfireHttpJobOptions.SMTPPwd); //验证账号密码
                 client.Send(mimeMessage);
                 client.Disconnect(true);
             }
@@ -124,7 +143,8 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         private static string SethtmlBody(string jobname, string url, string exception)
         {
-            var htmlbody = $@"<h3 align='center'>{HangfireHttpJobOptions.SMTPSubject}</h3>
+            var title = UseApollo ? ConfigSettings.Instance.SMTPSubject : HangfireHttpJobOptions.SMTPSubject;
+            var htmlbody = $@"<h3 align='center'>{title}</h3>
                             <h3>执行时间：</h3>
                             <p>
                                 {DateTime.Now}
@@ -204,7 +224,7 @@ namespace Hangfire.HttpJob.Server
                 var count = context.GetJobParameter<string>("RetryCount");
                 context.SetTextColor(ConsoleTextColor.Red);
                 //signalR推送
-                //SendRequest(ConfigSettings.Instance.URL+"/api/Publish/EveryOne", "测试");
+                //SendRequest(UseApollo?ConfigSettings.Instance.ServiceAddress:ConfigSettings.Instance.URL+"/api/Publish/EveryOne", "测试");
                 if (count == "3")//重试达到三次的时候发邮件通知
                 {
                     SendEmail(item.JobName, item.Url, ex.ToString());

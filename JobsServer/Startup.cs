@@ -30,6 +30,7 @@ using JobsServer.Hubs;
 using System.Net;
 using Hangfire.HttpJob.Support;
 using Hangfire.Server;
+using CommonUtils;
 
 namespace JobsServer
 {
@@ -42,27 +43,34 @@ namespace JobsServer
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            if (HangfireSettings.Instance.UseRedis)
+            if (UseApollo?ConfigSettings.Instance.UseRedis:HangfireSettings.Instance.UseRedis)
             {
                 Redis = ConnectionMultiplexer.Connect(HangfireSettings.Instance.HangfireRedisConnectionString);
             }
         }
         public static ConnectionMultiplexer Redis;
         public IConfiguration Configuration { get; }
-
+        /// <summary>
+        /// 是否使用apollo配置中心
+        /// </summary>
+        private static bool UseApollo = ConfigSettings.Instance.UseApollo;
         public void ConfigureServices(IServiceCollection services)
         {
-            //添加健康检查地址
-            HangfireSettings.Instance.HostServers.ForEach(s =>
-            {
-                services.AddHealthChecks().AddUrlGroup(new Uri(s.Uri), s.httpMethod.ToLower() == "post" ? HttpMethod.Post : HttpMethod.Get, $"{s.Uri}");
-            });
-            HangfireSettings.Instance.HangfireRedisConnectionString.Split(",").ToList().ForEach(
+            //健康检查地址添加
+                var hostlist =UseApollo?JsonConvert.DeserializeObject<List<HealthCheckInfo>>(ConfigSettings.Instance.HostServers):HangfireSettings.Instance.HostServers;
+                //添加健康检查地址
+                hostlist.ForEach(s =>
+                {
+                    services.AddHealthChecks().AddUrlGroup(new Uri(s.Uri), s.httpMethod.ToLower() == "post" ? HttpMethod.Post : HttpMethod.Get, $"{s.Uri}");
+                });
+            //redis集群检查地址添加
+            var redislist = UseApollo ? ConfigSettings.Instance.HangfireRedisConnectionString.Split(",").ToList() : HangfireSettings.Instance.HangfireRedisConnectionString.Split(",").ToList();
+            redislist.ForEach(
                 k =>
                 {
                     if (k.Contains(":"))
                     {
-                        services.AddHealthChecks().AddRedis(k,$"Redis: {k}");
+                        services.AddHealthChecks().AddRedis(k, $"Redis: {k}");
                     }
                 }
                 );
@@ -85,11 +93,12 @@ namespace JobsServer
                     //}).UseHangfireHttpJob().UseConsole();
 
 
-                    if (HangfireSettings.Instance.UseSqlSerVer)
+                    if (UseApollo?ConfigSettings.Instance.UseSqlSerVer:HangfireSettings.Instance.UseSqlSerVer)
                     {
 
                         //使用SQL server
-                        _ = config.UseSqlServerStorage(HangfireSettings.Instance.HangfireSqlserverConnectionString, new Hangfire.SqlServer.SqlServerStorageOptions()
+                        _ = config.UseSqlServerStorage(UseApollo?ConfigSettings.Instance.HangfireSqlserverConnectionString
+                            :HangfireSettings.Instance.HangfireSqlserverConnectionString, new Hangfire.SqlServer.SqlServerStorageOptions()
                         {
                             //每隔一小时检查过期job
                             JobExpirationCheckInterval = TimeSpan.FromHours(1),
@@ -112,7 +121,7 @@ namespace JobsServer
                         .UseDashboardMetric(DashboardMetrics.AwaitingCount);
                     }
 
-                    if (HangfireSettings.Instance.UseRedis)
+                    if (UseApollo?ConfigSettings.Instance.UseRedis:HangfireSettings.Instance.UseRedis)
                     {
                         //使用redis
                         config.UseRedisStorage(Redis, new Hangfire.Redis.RedisStorageOptions()
@@ -147,10 +156,11 @@ namespace JobsServer
                         .UseDashboardMetric(DashboardMetrics.ServerCount);
                     }
 
-                    if (HangfireSettings.Instance.UseMySql)
+                    if (UseApollo?ConfigSettings.Instance.UseMySql:HangfireSettings.Instance.UseMySql)
                     {
                         //使用mysql配置
                         config.UseStorage(new MySqlStorage(
+                            UseApollo?ConfigSettings.Instance.HangfireMysqlConnectionString:
                             HangfireSettings.Instance.HangfireMysqlConnectionString,
                             new MySqlStorageOptions
                             {
@@ -266,7 +276,7 @@ namespace JobsServer
 
             app.UseHangfireDashboard("/job", new DashboardOptions
             {
-                AppPath = HangfireSettings.Instance.AppWebSite,//返回时跳转的地址
+                AppPath = UseApollo?ConfigSettings.Instance.AppWebSite:HangfireSettings.Instance.AppWebSite,//返回时跳转的地址
                 DisplayStorageConnectionString = false,//是否显示数据库连接信息
                 IsReadOnlyFunc = Context =>
                 {
@@ -282,8 +292,8 @@ namespace JobsServer
                     {
                         new BasicAuthAuthorizationUser
                         {
-                            Login = HangfireSettings.Instance.LoginUser,//登录账号
-                            PasswordClear =  HangfireSettings.Instance.LoginPwd//登录密码
+                            Login =UseApollo?ConfigSettings.Instance.LoginUser:HangfireSettings.Instance.LoginUser,//登录账号
+                            PasswordClear =  UseApollo?ConfigSettings.Instance.LoginPwd:HangfireSettings.Instance.LoginPwd//登录密码
                         }
                     }
                 })

@@ -131,6 +131,10 @@ namespace JobsServer
         /// 后台进程
         /// </summary>
         public BackWorker backWorker = new BackWorker();
+        /// <summary>
+        /// 是否使用apollo配置中心
+        /// </summary>
+        public bool UseApollo => Convert.ToBoolean(Configuration["hangfire.UseApollo"]);
         #endregion
     }
     public class Emails
