@@ -53,7 +53,7 @@ namespace JobsServer
         /// <summary>
         /// 是否使用apollo配置中心
         /// </summary>
-        private static bool UseApollo = ConfigSettings.Instance.UseApollo;
+        private static readonly bool UseApollo = ConfigSettings.Instance.UseApollo;
         public void ConfigureServices(IServiceCollection services)
         {
             //健康检查地址添加

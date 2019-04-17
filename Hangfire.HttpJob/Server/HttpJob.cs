@@ -23,7 +23,7 @@ namespace Hangfire.HttpJob.Server
         /// <summary>
         /// 是否使用apollo配置中心
         /// </summary>
-        private static bool UseApollo = ConfigSettings.Instance.UseApollo;
+        private static readonly bool UseApollo = ConfigSettings.Instance.UseApollo;
         private static readonly Logger logger = new LogFactory().GetCurrentClassLogger();
         public static HangfireHttpJobOptions HangfireHttpJobOptions;
         private static MimeMessage mimeMessage;
@@ -57,9 +57,11 @@ namespace Hangfire.HttpJob.Server
                     });
                 }
                 mimeMessage.Subject = UseApollo ? ConfigSettings.Instance.SMTPSubject : HangfireHttpJobOptions.SMTPSubject;
-                var builder = new BodyBuilder();
-                //builder.TextBody = $"执行出错,任务名称【{item.JobName}】,错误详情：{ex}";
-                builder.HtmlBody = SethtmlBody(jobname, Url, $"执行出错，错误详情:{exception}");
+                var builder = new BodyBuilder
+                {
+                    //builder.TextBody = $"执行出错,任务名称【{item.JobName}】,错误详情：{ex}";
+                    HtmlBody = SethtmlBody(jobname, Url, $"执行出错，错误详情:{exception}")
+                };
                 mimeMessage.Body = builder.ToMessageBody();
                 var client = new SmtpClient();
                 client.Connect(UseApollo ? ConfigSettings.Instance.SMTPServerAddress : HangfireHttpJobOptions.SMTPServerAddress,
@@ -123,14 +125,14 @@ namespace Hangfire.HttpJob.Server
             };
             var client = GetHttpClient(item);
             var httpMesage = PrepareHttpRequestMessage(item);
-            var httpResponse = client.SendAsync(httpMesage).GetAwaiter().GetResult();
+            _ = client.SendAsync(httpMesage).GetAwaiter().GetResult();
             var httpcontent = new StringContent(item.Data.ToString());
             client.DefaultRequestHeaders.Add("Method", "Post");
             httpcontent.Headers.ContentType = new MediaTypeHeaderValue(item.ContentType);
             client.DefaultRequestHeaders.Add("UserAgent",
       "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
             client.DefaultRequestHeaders.Add("KeepAlive", "false");
-            httpResponse = client.PostAsync(item.Url, httpcontent).GetAwaiter().GetResult();
+            _ = client.PostAsync(item.Url, httpcontent).GetAwaiter().GetResult();
             string result = httpcontent.ReadAsStringAsync().GetAwaiter().GetResult();
             return result;
         }

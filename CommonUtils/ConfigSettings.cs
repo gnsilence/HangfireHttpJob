@@ -13,7 +13,7 @@ namespace CommonUtils
     /// </summary>
     public class ConfigSettings
     {
-        private static Lazy<ConfigSettings> _instance = new Lazy<ConfigSettings>(() => new ConfigSettings());
+        private static readonly Lazy<ConfigSettings> _instance = new Lazy<ConfigSettings>(() => new ConfigSettings());
         public static ConfigSettings Instance => _instance.Value;
         public IConfigurationRoot Configuration { get; set; }
         public ConfigSettings()
@@ -120,10 +120,7 @@ namespace CommonUtils
         /// 邮件标题
         /// </summary>
         public string SMTPSubject => Configuration["SMTPSubject"];
-        /// <summary>
-        /// 接收者邮箱
-        /// </summary>
-        private List<Emails> SendList { get; } = new List<Emails>();
+
         /// <summary>
         /// 接收者邮箱
         /// </summary>
@@ -148,7 +145,7 @@ namespace CommonUtils
         /// <summary>
         /// http方法
         /// </summary>
-        public string httpMethod { get; set; }
+        public string HttpMethod { get; set; }
     }
 
     public class BackWorker

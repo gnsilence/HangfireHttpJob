@@ -88,7 +88,7 @@ namespace Hangfire.HttpJob.Support
             {
                 //获取锁超时，取消任务，任务会默认置为成功
                 filterContext.Canceled = true;
-                logger.Info($"任务{filterContext.BackgroundJob.Job.Args[1]}超时,任务id{filterContext.BackgroundJob.Id}");
+                logger.Info($"任务{filterContext.BackgroundJob.Job.Args[1]}超时,任务id{filterContext.BackgroundJob.Id}异常信息:{ec}");
             }
         }
 
@@ -100,8 +100,7 @@ namespace Hangfire.HttpJob.Support
 
         public void OnStateElection(ElectStateContext context)
         {
-            var failedState = context.CandidateState as FailedState;
-            if (failedState != null)
+            if (context.CandidateState is FailedState failedState)
             {
                 logger.Warn(
                     "任务 `{0}` 执行失败，异常为 `{1}`",

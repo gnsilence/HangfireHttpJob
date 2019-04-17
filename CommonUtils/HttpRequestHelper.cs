@@ -22,8 +22,10 @@ namespace CommonUtils
 
             HttpContent httpContent = new StringContent(postData);
 
-            httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            httpContent.Headers.ContentType.CharSet = "utf-8";
+            httpContent.Headers.ContentType = new MediaTypeHeaderValue("application/json")
+            {
+                CharSet = "utf-8"
+            };
 
             HttpClient httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("Method", "Post");
