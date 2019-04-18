@@ -121,6 +121,7 @@ startup中
             Redis = ConnectionMultiplexer.Connect("127.0.0.1:6380,127.0.0.1:7001,127.0.0.1:7003,allowAdmin=true,SyncTimeout=10000");
         }
 
+
 public static ConnectionMultiplexer Redis;
 
 
@@ -158,6 +159,7 @@ services.AddHangfire(config =>
                 .UseDashboardMetric(DashboardMetrics.RetriesCount)
                 .UseDashboardMetric(DashboardMetrics.FailedCount)
                 .UseDashboardMetric(DashboardMetrics.ServerCount);
+            }
 
          app.UseHangfireServer(new BackgroundJobServerOptions()
             {
