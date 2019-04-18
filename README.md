@@ -1,5 +1,6 @@
 使用说明
 ====
+
 1.数据库配置，sqlserver ,redis，mysql只需要在config中配置连接，就可以直接跑起来添加任务运行，
 其他数据库暂时用不到所以没试,(推荐使用redis，可以使用redis集群+多实例部署实现故障迁移和高可用)
 
@@ -96,4 +97,86 @@ redis集群测试
 
 共用配置：单独使用一个实例添加公共命名空间，无需引用这个应用id到系统，这样可以保证所有实例
 统一使用公有配置部分，而且可以实现各个实例运行不同的地址，端口，及其他私有配置。(共用配置如邮件通知,任务过期时间，健康检查地址)
+
+
+4.18
+====
+
+去除核心库httpjob强制依赖，现在只需要引用nuget包就可以使用核心功能
+
+引用项目包 Install-Package Hangfire.HttpJob.Ext -Version 1.0.2 
+
+可选  Install-Package Hangfire.Redis.StackExchange -Version 1.8.0
+
+或者nuget包管理搜索 Hangfire.HttpJob.Ext
+
+配置部分代码，支持配置面板的按钮名称，无需配置config,(需要其他功能参考源码项目)：
+
+startup中
+
+ public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+            //使用redis集群，注意集群需要手动提前配置好，主从节点
+            Redis = ConnectionMultiplexer.Connect("127.0.0.1:6380,127.0.0.1:7001,127.0.0.1:7003,allowAdmin=true,SyncTimeout=10000");
+        }
+
+public static ConnectionMultiplexer Redis;
+
+
+services.AddHangfire(config =>
+            {
+                //使用redis
+                config.UseRedisStorage(Redis, new Hangfire.Redis.RedisStorageOptions()
+                {
+                    FetchTimeout = TimeSpan.FromMinutes(5),
+                    Prefix = "{hangfire}:",
+                    //活动服务器超时时间
+                    InvisibilityTimeout = TimeSpan.FromHours(1),
+                    //任务过期检查频率
+                    ExpiryCheckInterval = TimeSpan.FromHours(1),
+                    DeletedListSize = 10000,
+                    SucceededListSize = 10000
+                })
+                .UseHangfireHttpJob(new HangfireHttpJobOptions()
+                {
+                    AddHttpJobButtonName = "添加计划任务",
+                    AddRecurringJobHttpJobButtonName = "添加定时任务",
+                    EditRecurringJobButtonName = "编辑定时任务",
+                    PauseJobButtonName = "暂停或开始",
+                    DashboardTitle = "XXX公司任务管理",
+                    DashboardName = "后台任务管理",
+                    DashboardFooter = "XXX公司后台任务管理V1.0.0.0"
+                })
+                .UseConsole(new ConsoleOptions()
+                {
+                    BackgroundColor = "#000079"
+                })
+                .UseDashboardMetric(DashboardMetrics.AwaitingCount)
+                .UseDashboardMetric(DashboardMetrics.ProcessingCount)
+                .UseDashboardMetric(DashboardMetrics.RecurringJobCount)
+                .UseDashboardMetric(DashboardMetrics.RetriesCount)
+                .UseDashboardMetric(DashboardMetrics.FailedCount)
+                .UseDashboardMetric(DashboardMetrics.ServerCount);
+
+         app.UseHangfireServer(new BackgroundJobServerOptions()
+            {
+                ServerTimeout = TimeSpan.FromMinutes(4),
+                SchedulePollingInterval = TimeSpan.FromSeconds(1),//秒级任务需要配置短点，一般任务可以配置默认时间，默认15秒
+                ShutdownTimeout = TimeSpan.FromMinutes(30),//超时时间
+                Queues = new[] { "apis" },//队列
+                WorkerCount = Math.Max(Environment.ProcessorCount, 40)//工作线程数，当前允许的最大线程，默认20
+            });
+
+            //此处hjob可以随意填写
+            app.UseHangfireDashboard("/hjob", new DashboardOptions
+            {
+                AppPath = "#",
+                DisplayStorageConnectionString = false,//是否显示数据库连接信息
+                IsReadOnlyFunc = Context =>
+                {
+
+                    return false;//是否只读面板
+                }
+            });
 
