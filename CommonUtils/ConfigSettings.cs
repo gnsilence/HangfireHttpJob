@@ -20,19 +20,25 @@ namespace CommonUtils
         {
             var builder = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
             //获取私有命名空间
-            builder.AddApollo(builder.Build().GetSection("apolloserver"))
+            try
+            {
+                builder.AddApollo(builder.Build().GetSection("apolloserver"))
                 .AddDefault()
                 .AddNamespace("application")//当前实例的私有基础配置(私有，不共享，只对当前运行程序生效)
                 .AddNamespace("development.Server.Common")//基础配置(公共配置,所有实例共享)
                 .AddNamespace("development.Server.Email")//邮件配置(公共配置，所有实例共享)
                 .AddNamespace("development.Server.Health");//健康检查配置(公共配置，所有实例共享)
-
+            }
+            catch (Exception ec)
+            {
+            }
             Configuration = builder.Build();
 
         }
         /// <summary>
-        /// 站点地址,本地配置使用
+        /// 站点地址,本地配置使用，此配置来自config文件，非Apollo
         /// </summary>
         public string URL => Configuration["hangfire.server.serviceAddress"];
         /// <summary>
@@ -130,9 +136,9 @@ namespace CommonUtils
         /// </summary>
         public bool UseBackWorker => Convert.ToBoolean(Configuration["UseBackWorker"]);
         /// <summary>
-        /// 后台进程
+        /// 是否使用邮件通知，此配置来自config文件，非Apollo
         /// </summary>
-        //public BackWorker backWorker = new BackWorker();
+        public bool UseEmail=> Convert.ToBoolean(Configuration["UseBackWorker"]);
         #endregion
     }
 

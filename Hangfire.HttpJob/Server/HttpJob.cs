@@ -76,12 +76,14 @@ namespace Hangfire.HttpJob.Server
             {
                 logger.Info($"邮件服务异常，异常为：{ee}");
                 return false;
-                //context.SetTextColor(ConsoleTextColor.Red);
-                //context.WriteLine($"邮件服务异常，异常为：{ee}");
             }
             return true;
         }
-
+        /// <summary>
+        /// 设置httpclient
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
         public static HttpClient GetHttpClient(HttpJobItem item)
         {
             var handler = new HttpClientHandler();
@@ -93,7 +95,7 @@ namespace Hangfire.HttpJob.Server
             {
                 handler.Proxy = HangfireHttpJobOptions.Proxy;
             }
-
+            //设置超时时间
             var HttpClient = new HttpClient(handler)
             {
                 Timeout = TimeSpan.FromSeconds(item.Timeout == 0 ? HangfireHttpJobOptions.GlobalHttpTimeOut : item.Timeout),
@@ -201,21 +203,7 @@ namespace Hangfire.HttpJob.Server
                 var client = GetHttpClient(item);
                 var httpMesage = PrepareHttpRequestMessage(item);
                 var httpResponse = new HttpResponseMessage();
-                if (item.Method.ToLower() == "post")
-                {
-                    var httpcontent = new StringContent(item.Data.ToString());
-                    client.DefaultRequestHeaders.Add("Method", "Post");
-                    httpcontent.Headers.ContentType = new MediaTypeHeaderValue(item.ContentType);
-                    client.DefaultRequestHeaders.Add("UserAgent",
-              "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
-                    client.DefaultRequestHeaders.Add("KeepAlive", "false");
-
-                    httpResponse = client.PostAsync(item.Url, httpcontent).GetAwaiter().GetResult();
-                }
-                else
-                {
-                    httpResponse = client.SendAsync(httpMesage).GetAwaiter().GetResult();
-                }
+                httpResponse = SendUrlRequest(item, client, httpMesage);
                 HttpContent content = httpResponse.Content;
                 string result = content.ReadAsStringAsync().GetAwaiter().GetResult();
                 context.WriteLine($"执行结果：{result}");
@@ -227,7 +215,7 @@ namespace Hangfire.HttpJob.Server
                 context.SetTextColor(ConsoleTextColor.Red);
                 //signalR推送
                 //SendRequest(UseApollo?ConfigSettings.Instance.ServiceAddress:ConfigSettings.Instance.URL+"/api/Publish/EveryOne", "测试");
-                if (count == "3")//重试达到三次的时候发邮件通知
+                if (count == "3"&&ConfigSettings.Instance.UseEmail)//重试达到三次的时候发邮件通知
                 {
                     SendEmail(item.JobName, item.Url, ex.ToString());
                 }
@@ -236,7 +224,34 @@ namespace Hangfire.HttpJob.Server
                 throw;//不抛异常不会执行重试操作
             }
         }
+        /// <summary>
+        /// 发送请求
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="client"></param>
+        /// <param name="httpMesage"></param>
+        /// <returns></returns>
+        private static HttpResponseMessage SendUrlRequest(HttpJobItem item, HttpClient client, HttpRequestMessage httpMesage)
+        {
+            HttpResponseMessage httpResponse;
+            if (item.Method.ToLower() == "post")
+            {
+                var httpcontent = new StringContent(item.Data.ToString());
+                client.DefaultRequestHeaders.Add("Method", "Post");
+                httpcontent.Headers.ContentType = new MediaTypeHeaderValue(item.ContentType);
+                client.DefaultRequestHeaders.Add("UserAgent",
+          "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
+                client.DefaultRequestHeaders.Add("KeepAlive", "false");
 
+                httpResponse = client.PostAsync(item.Url, httpcontent).GetAwaiter().GetResult();
+            }
+            else
+            {
+                httpResponse = client.SendAsync(httpMesage).GetAwaiter().GetResult();
+            }
+
+            return httpResponse;
+        }
     }
 
 

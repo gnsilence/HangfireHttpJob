@@ -137,6 +137,13 @@ namespace JobsServer
                         })
                         .UseHangfireHttpJob(new HangfireHttpJobOptions()
                         {
+                            AddHttpJobButtonName="添加计划任务",
+                            AddRecurringJobHttpJobButtonName = "添加定时任务",
+                            EditRecurringJobButtonName = "编辑定时任务",
+                            PauseJobButtonName = "暂停或开始",
+                            DashboardTitle = "XXX公司任务管理",
+                            DashboardName="后台任务管理",
+                            DashboardFooter="XXX公司后台任务管理V1.0.0.0",
                             SendToMailList = HangfireSettings.Instance.SendMailList,
                             SendMailAddress = HangfireSettings.Instance.SendMailAddress,
                             SMTPServerAddress = HangfireSettings.Instance.SMTPServerAddress,

@@ -6,7 +6,13 @@
     <Description>Add ApiJob To Hangfire Use Redis,Sqlserver,Mysql,Storage and install as a windows server,Extended to the original author by Hangfire.httpjob 1.0.2 </Description>
     <PackageLicenseUrl>https://github.com/gnsilence/HangfireHttpJob</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/gnsilence/HangfireHttpJob</PackageProjectUrl>
-    <Version>1.0.3</Version>
+    <Version>1.0.2</Version>
+    <PackageId>Hangfire.HttpJob.Ext</PackageId>
+    <Authors>Hangfire.HttpJob.Ext</Authors>
+    <Company>Hangfire.HttpJob.Ext</Company>
+    <Product>Hangfire.HttpJob.Ext</Product>
+    <AssemblyVersion>1.0.0.2</AssemblyVersion>
+    <FileVersion>1.0.0.2</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,16 +30,13 @@
   <ItemGroup>
     <PackageReference Include="Hangfire.AspNetCore" Version="1.7.1" />
     <PackageReference Include="Hangfire.Console" Version="1.4.2" />
+    <PackageReference Include="Hangfire.HttpJob.Ext.CommonUtils" Version="1.0.1" />
     <PackageReference Include="MailKit" Version="2.1.3" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="NLog" Version="4.6.2" />
-    <PackageReference Include="NLog.Config" Version="4.6.0" />
+    <PackageReference Include="NLog.Config" Version="4.6.2" />
     <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\CommonUtils\CommonUtils.csproj" />
   </ItemGroup>
 
   <ItemGroup>

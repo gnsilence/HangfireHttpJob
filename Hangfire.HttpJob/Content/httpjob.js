@@ -6,12 +6,7 @@
         }
 
         HttpJob.prototype._initialize = function () {
-            //更改控制面板标题
-            $(".navbar-brand").html("任务管理");
-            //更改hangfire版本显示替换为任意值
-            $("#footer ul li:first-child").html("Job管理V1.0");
-            //更改标题
-            document.title = "任务管理面板";
+           
             /*
           生成corn表达式相关方法
            */
@@ -441,6 +436,13 @@
             var config = window.Hangfire.httpjobConfig;
             if (!config) return;
 
+            //更改控制面板标题
+            $(".navbar-brand").html(config.DashboardName);
+            //更改hangfire版本显示替换为任意值
+            $("#footer ul li:first-child").html(config.DashboardFooter);
+            //更改标题
+            document.title = config.DashboardTitle;
+
             //判断是否需要注入
             if (!config.NeedAddNomalHttpJobButton && !config.NeedAddRecurringHttpJobButton && !config.NeedAddCronButton && !config.NeedEditRecurringJobButton) {
                 return;
@@ -578,7 +580,7 @@
             });
 
             $('#addRecurringHttpJob').click(function () {
-                $(".modal-title").html("新增周期任务");
+                $(".modal-title").html(config.AddRecurringJobHttpJobButtonName);
                 window.jsonEditor.setText(recurring_templete);
                 window.jsonEditor.format();
                 $('#httpJobModal').modal({ backdrop: 'static', keyboard: false });
@@ -629,7 +631,7 @@
                     alert("请选择要编辑的任务"); return;
                 } else {
                     if ($("input[type=checkbox]:checked").val() === "on" && $("table tbody tr").size() > 1) { alert("只能选择一项任务进行编辑"); return; }
-                    $(".modal-title").html("编辑周期任务");
+                    $(".modal-title").html(config.EditRecurringJobButtonName);
                     $.ajax({
                         type: "post",
                         url: editgeturl,

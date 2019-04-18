@@ -2,6 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>Hangfire.HttpJob.Ext.CommonUtils</PackageId>
+    <Authors>gnsilence</Authors>
+    <Company>Hangfire.HttpJob.Ext.CommonUtils</Company>
+    <Product>Hangfire.HttpJob.Ext.CommonUtils</Product>
+    <Description>这个包是用来给Hangfire.HttpJob.Ext 拓展apollo统一配置中心使用，不能单独使用，但可以在集成项目后全局使用</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/gnsilence/HangfireHttpJob</PackageProjectUrl>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.1.1</AssemblyVersion>
+    <FileVersion>1.0.1.1</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
