@@ -1,14 +1,23 @@
 使用说明
 ====
 
-1.数据库配置，sqlserver ,redis，mysql只需要在config中配置连接，就可以直接跑起来添加任务运行，
-其他数据库暂时用不到所以没试,(推荐使用redis，可以使用redis集群+多实例部署实现故障迁移和高可用)
+快速使用核心功能集成到项目中：
 
-2.运行方式，宿主程序为webapi，需要用配置文件中的website地址运行，打开才是hangfire面板
+引用项目包 Install-Package Hangfire.HttpJob.Ext -Version 1.0.2 
 
-3.添加了basic认证，账号密码在config配置，用来登录hangfire面板
+引用项目包 Install-Package Hangfire.HttpJob.Ext.Storage.All -Version 1.0.0 
 
-4.任务类型：
+或者nuget管理器搜索包安装
+
+其中Hangfire.HttpJob.Ext.Storage.All 主要是集成了存储库：
+
+AzureDocumentDB，SqlServer，MySql， Oracle ，SQLite ，Redis, LiteDB , PostgreSql , Mongo 
+以及Dashboard.BasicAuthorization 升级到standard 2.0 
+
+然后只需要在core的startup中配置即可，配置方式见文末
+
+
+任务类型：
 
 周期任务: 在周期任务面板，可以添加，编辑(注意不要编辑名称,目前是根据任务名称修改作业，更改名称后被认为是一个新的作业)
 
@@ -16,12 +25,14 @@
 
 Windows服务部署
 ====
-控制台方式运行,需要加参数 --console
+注意：控制台方式运行调试时,需要加参数 --console
 
 Windows服务发布：直接发布webapi项目,在publish目录用管理员方式运行安装服务bat脚本，即可安装成功。
 
 可以多实例部署
 
+部分截图
+====
 
 任务面板
 ====
@@ -61,7 +72,7 @@ redis集群测试
 ====
 ![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/apollo.png)
 
-新增功能
+其他功能参考项目源码可以添加
 ====
 
 1，邮件推送配置，使用的腾讯的smtp，需要去邮箱设置里开启端口和获取密码，使用的mailkit插件，可以设置邮件模板
@@ -69,29 +80,28 @@ redis集群测试
 
 2，signalR推送，服务寄宿的webapi，使用webapi推送，需要对应版本的js才能支持推送到web
 
-3，分布式锁，在job过滤器中申请分布式锁，这样可以防止相同的任务并发执行，默认使用的秒作为超时时间单位。
-
 4，接口健康检查，可以配置检查地址，然后访问的地址后面加上hc，可以在ui界面查看检查情况，需要每个接口提供检查地址
 具体参考appsettings中的配置
 
-5，后台进程，用来实现长时间持续运行的任务，或者秒级任务
+5，后台进程，用来实现长时间持续运行的任务
 
 6，暂停和继续任务，实现的原理是通过在set中添加任务属性，在过滤器中跳过执行达到暂停的目的，移除属性值后任务继续执行，
 任务暂停后前台会渲染列表字体为红色，方便快速找出被暂停的任务
 
-4月新增功能
+
+其他：
 ====
 
-1，升级hangfire版本到1.7，hangfire的sqlserver库到1.7版本，替换原有mysql存储库，升级1.7版本后支持通过cron表达式新增秒级任务
+升级1.7版本后支持通过cron表达式新增秒级任务
 但原有的在线表达式生成中部分表达式不能使用，需要自行测试表达式或者查看(https://github.com/HangfireIO/Cronos)
 
-2，通过宿主的webapi实现暴露接口，供外部程序添加，修改，删除任务，以及手动触发周期任务，还可以添加一个任务集合实现继承的连续任务
+通过宿主的webapi实现暴露接口，供外部程序添加，修改，删除任务，以及手动触发周期任务，还可以添加一个任务集合实现继承的连续任务
 
-3，新增任务搜索，可以在周期任务，完成的历史任务中根据任务名称搜索，区分大小写的模糊搜索，并且可以标识出是否被暂停
+新增任务搜索，可以在周期任务，完成的历史任务中根据任务名称搜索，区分大小写的模糊搜索，并且可以标识出是否被暂停
 
-4,升级部分类库到standa 2.0 ,升级hangfire到最新版1.7.1
+升级部分类库到standa 2.0 ,升级hangfire到最新版1.7.1
 
-5,添加使用apollo配置中心的共用配置文件，配置方式:
+添加使用apollo配置中心的共用配置文件，配置方式:
 
 私有配置：每一个实例在apollo中添加一个应用，只配置私有命名空间application，只需要添加访问地址之类的实例私有配置
 
@@ -99,16 +109,8 @@ redis集群测试
 统一使用公有配置部分，而且可以实现各个实例运行不同的地址，端口，及其他私有配置。(共用配置如邮件通知,任务过期时间，健康检查地址)
 
 
-4.18
+核心功能配置方式参考
 ====
-
-去除核心库httpjob强制依赖，现在只需要引用nuget包就可以使用核心功能
-
-引用项目包 Install-Package Hangfire.HttpJob.Ext -Version 1.0.2 
-
-可选  Install-Package Hangfire.Redis.StackExchange -Version 1.8.0
-
-或者nuget包管理搜索 Hangfire.HttpJob.Ext
 
 配置部分代码，支持配置面板的按钮名称，无需配置config,(需要其他功能参考源码项目)：
 
@@ -117,16 +119,18 @@ startup中
  public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+
             //使用redis集群，注意集群需要手动提前配置好，主从节点
+
             Redis = ConnectionMultiplexer.Connect("127.0.0.1:6380,127.0.0.1:7001,127.0.0.1:7003,allowAdmin=true,SyncTimeout=10000");
         }
 
 
 public static ConnectionMultiplexer Redis;
 
-
 services.AddHangfire(config =>
             {
+
                 //使用redis
                 config.UseRedisStorage(Redis, new Hangfire.Redis.RedisStorageOptions()
                 {
@@ -159,6 +163,7 @@ services.AddHangfire(config =>
                 .UseDashboardMetric(DashboardMetrics.RetriesCount)
                 .UseDashboardMetric(DashboardMetrics.FailedCount)
                 .UseDashboardMetric(DashboardMetrics.ServerCount);
+
             }
 
          app.UseHangfireServer(new BackgroundJobServerOptions()

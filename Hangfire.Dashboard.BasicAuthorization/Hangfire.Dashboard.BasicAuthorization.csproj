@@ -1,13 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Hangfire.HttpJob.Ext.Dashboard.BasicAuthorization</PackageId>
+    <Authors>gnsilence</Authors>
+    <Product>Hangfire.HttpJob.Ext.Dashboard.BasicAuthorization</Product>
+    <Company>Hangfire.HttpJob.Ext.Dashboard.BasicAuthorization</Company>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Hangfire.AspNetCore" Version="1.7.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.0" />
   </ItemGroup>
 
 </Project>

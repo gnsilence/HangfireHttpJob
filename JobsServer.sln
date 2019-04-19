@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob", "Hangfir
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Redis.StackExchange", "Hangfire.Redis.StackExchange\Hangfire.Redis.StackExchange.csproj", "{6BDF8635-B8AC-4AE2-9076-BEDA8A5956E5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.HttpJob.Storage.All", "Hangfire.HttpJob.Storage.All\Hangfire.HttpJob.Storage.All.csproj", "{02811364-3653-4D30-8676-7819386B8E9F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{6BDF8635-B8AC-4AE2-9076-BEDA8A5956E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BDF8635-B8AC-4AE2-9076-BEDA8A5956E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6BDF8635-B8AC-4AE2-9076-BEDA8A5956E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02811364-3653-4D30-8676-7819386B8E9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02811364-3653-4D30-8676-7819386B8E9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02811364-3653-4D30-8676-7819386B8E9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02811364-3653-4D30-8676-7819386B8E9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
