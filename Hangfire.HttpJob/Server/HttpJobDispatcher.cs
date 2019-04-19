@@ -252,9 +252,14 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         public bool AddHttprecurringjob(HttpJobItem jobItem)
         {
+            //队列不存在时返回失败
+            if (!_options.QueuesList.Contains(jobItem.QueueName))
+            {
+                return false;
+            }
             try
             {
-                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, null), jobItem.Corn, TimeZoneInfo.Local);
+                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, null), jobItem.Corn, TimeZoneInfo.Local, jobItem.QueueName);
                 return true;
             }
             catch (Exception ex)

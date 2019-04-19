@@ -43,12 +43,14 @@ namespace JobsServer
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            if (UseApollo?ConfigSettings.Instance.UseRedis:HangfireSettings.Instance.UseRedis)
+            if (UseApollo ? ConfigSettings.Instance.UseRedis : HangfireSettings.Instance.UseRedis)
             {
                 Redis = ConnectionMultiplexer.Connect(HangfireSettings.Instance.HangfireRedisConnectionString);
             }
         }
         public static ConnectionMultiplexer Redis;
+
+        public static readonly string [] ApiQueues=new []{"apis","jobs","task","rjob","pjob","rejob", "default" };
         public IConfiguration Configuration { get; }
         /// <summary>
         /// 是否使用apollo配置中心
@@ -137,6 +139,7 @@ namespace JobsServer
                         })
                         .UseHangfireHttpJob(new HangfireHttpJobOptions()
                         {
+                            QueuesList=ApiQueues,
                             AddHttpJobButtonName="添加计划任务",
                             AddRecurringJobHttpJobButtonName = "添加定时任务",
                             EditRecurringJobButtonName = "编辑定时任务",
@@ -259,7 +262,7 @@ namespace JobsServer
                 ServerTimeout = TimeSpan.FromMinutes(4),
                 SchedulePollingInterval = TimeSpan.FromSeconds(1),//秒级任务需要配置短点，一般任务可以配置默认时间，默认15秒
                 ShutdownTimeout = TimeSpan.FromMinutes(30),//超时时间
-                Queues = queues,//队列
+                Queues = ApiQueues,//队列
                 WorkerCount = Math.Max(Environment.ProcessorCount, 40)//工作线程数，当前允许的最大线程，默认20
             },
             //服务器资源检测频率

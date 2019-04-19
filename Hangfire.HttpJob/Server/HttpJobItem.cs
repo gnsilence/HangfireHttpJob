@@ -33,7 +33,10 @@ namespace Hangfire.HttpJob.Server
         public int DelayFromMinutes { get; set; }
         public string Corn { get; set; }
         public string JobName { get; set; }
-
+        /// <summary>
+        /// 队列名称
+        /// </summary>
+        public string QueueName { get; set; }
         public string BasicUserName { get; set; }
         public string BasicPassword { get; set; }
 
@@ -66,5 +69,7 @@ namespace Hangfire.HttpJob.Server
         public string JobName { get; set; }
         public string BasicUserName { get; set; }
         public string BasicPassword { get; set; }
+
+        public string QueueName { get; set; }
     }
 }

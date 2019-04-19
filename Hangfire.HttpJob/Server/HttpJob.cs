@@ -187,9 +187,8 @@ namespace Hangfire.HttpJob.Server
         /// <param name="item"></param>
         /// <param name="jobName"></param>
         /// <param name="context"></param>
-        [AutomaticRetry(Attempts = 3, DelaysInSeconds = new[] { 30, 60, 90 }, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
-        [DisplayName("Api任务:{1}")]
-        [Queue("apis")]
+        [AutomaticRetry(Attempts = 3, DelaysInSeconds = new[] { 30, 60, 120 }, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
+        [DisplayName("任务名称:{1}")]
         [JobFilter(timeoutInSeconds: 3600)]
         public static void Excute(HttpJobItem item, string jobName = null, PerformContext context = null)
         {
