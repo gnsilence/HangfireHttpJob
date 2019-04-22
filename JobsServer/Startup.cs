@@ -139,7 +139,6 @@ namespace JobsServer
                         })
                         .UseHangfireHttpJob(new HangfireHttpJobOptions()
                         {
-                            QueuesList=ApiQueues,
                             AddHttpJobButtonName="添加计划任务",
                             AddRecurringJobHttpJobButtonName = "添加定时任务",
                             EditRecurringJobButtonName = "编辑定时任务",

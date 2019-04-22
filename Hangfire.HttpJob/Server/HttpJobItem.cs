@@ -39,7 +39,7 @@ namespace Hangfire.HttpJob.Server
         public string QueueName { get; set; }
         public string BasicUserName { get; set; }
         public string BasicPassword { get; set; }
-
+        public bool IsRetry { get; set; }
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this);
@@ -71,5 +71,7 @@ namespace Hangfire.HttpJob.Server
         public string BasicPassword { get; set; }
 
         public string QueueName { get; set; }
+
+        public bool IsRetry { get; set; }
     }
 }

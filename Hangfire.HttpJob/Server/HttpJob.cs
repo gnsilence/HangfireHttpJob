@@ -181,16 +181,18 @@ namespace Hangfire.HttpJob.Server
             }
             return request;
         }
+        private const int num = 3;
         /// <summary>
         /// 执行任务，DelaysInSeconds(重试时间间隔/单位秒)
         /// </summary>
         /// <param name="item"></param>
         /// <param name="jobName"></param>
         /// <param name="context"></param>
-        [AutomaticRetry(Attempts = 3, DelaysInSeconds = new[] { 30, 60, 120 }, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
-        [DisplayName("任务名称:{1}")]
+        [AutomaticRetrySet(Attempts = num, DelaysInSeconds = new[] { 20, 30, 60 }, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
+        [AutomaticRetry(Attempts =0,OnAttemptsExceeded =AttemptsExceededAction.Fail)]
+        [DisplayName("Args : [  JobName : {1}  |  QueueName : {2}  |  IsRetry : {3} ]")]
         [JobFilter(timeoutInSeconds: 3600)]
-        public static void Excute(HttpJobItem item, string jobName = null, PerformContext context = null)
+        public static void Excute(HttpJobItem item, string jobName = null,string queuename=null,bool isretry=false, PerformContext context = null)
         {
             try
             {

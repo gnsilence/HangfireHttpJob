@@ -76,9 +76,5 @@ namespace Hangfire.HttpJob
         /// 代理设置
         /// </summary>
         public IWebProxy Proxy { get; set; }
-        /// <summary>
-        /// 队列名称，添加任务时会随机选队列
-        /// </summary>
-        public string [] QueuesList { get; set; }
     }
 }

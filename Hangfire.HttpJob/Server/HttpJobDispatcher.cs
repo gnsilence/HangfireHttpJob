@@ -13,14 +13,11 @@ namespace Hangfire.HttpJob.Server
 {
     public class HttpJobDispatcher : IDashboardDispatcher
     {
-        private readonly HangfireHttpJobOptions _options;
         private static readonly ILog Logger = LogProvider.For<HttpJobDispatcher>();
         public HttpJobDispatcher(HangfireHttpJobOptions options)
         {
             if (options == null)
                 throw new ArgumentNullException(nameof(options));
-
-            _options = options;
         }
 
         public Task Dispatch(DashboardContext context)
@@ -168,12 +165,18 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         public string GetJobdata(string name)
         {
-            var data = JobStorage.Current.GetConnection().GetAllEntriesFromHash($"recurring-job:{name}");
-            var jobinfo = JsonConvert.DeserializeObject<JobInfo>(data.Where(p => p.Key == "Job").ToList().FirstOrDefault().Value);
-            //设置post请求时参数data的格式
-            var args = jobinfo.Arguments.Replace(@"\", "").Replace("\"{", "{").Replace("}\"", "}");
-            var httpjob = JsonConvert.DeserializeObject<RecurringJobItem>(args.Substring(args.IndexOf("{"), args.LastIndexOf("}")));
-            return JsonConvert.SerializeObject(httpjob);
+            using (var connection = JobStorage.Current.GetConnection())
+            {
+                var RecurringJob = StorageConnectionExtensions.GetRecurringJobs(connection).
+                    Where(p => p.Id == name).FirstOrDefault();
+                if (RecurringJob != null)
+                {
+                    return JsonConvert.SerializeObject(
+                        JsonConvert.DeserializeObject<RecurringJobItem>(RecurringJob.Job.Args.FirstOrDefault().ToString())
+                        );
+                }
+            }
+            return "";
         }
 
         /// <summary>
@@ -185,7 +188,7 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName, null), TimeSpan.FromMinutes(jobItem.DelayFromMinutes));
+                BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName,jobItem.QueueName,jobItem.IsRetry, null), TimeSpan.FromMinutes(jobItem.DelayFromMinutes));
                 return true;
             }
             catch (Exception ex)
@@ -252,14 +255,17 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         public bool AddHttprecurringjob(HttpJobItem jobItem)
         {
-            //队列不存在时返回失败
-            if (!_options.QueuesList.Contains(jobItem.QueueName))
+            //get queues from server
+            var server = JobStorage.Current.GetMonitoringApi().Servers().
+                Where(p => p.Queues.Count > 0).FirstOrDefault();
+            var queues = server.Queues.ToList();
+            if (!queues.Exists(p => p== jobItem.QueueName.ToLower()) || queues.Count == 0)
             {
                 return false;
             }
             try
             {
-                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName, null), jobItem.Corn, TimeZoneInfo.Local, jobItem.QueueName);
+                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName,jobItem.QueueName,jobItem.IsRetry, null), jobItem.Corn, TimeZoneInfo.Local, jobItem.QueueName.ToLower());
                 return true;
             }
             catch (Exception ex)

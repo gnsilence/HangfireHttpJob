@@ -25,7 +25,7 @@ namespace JobsServer.Controllers
             var addreslut = string.Empty;
             try
             {
-                addreslut = BackgroundJob.Enqueue(() => Hangfire.HttpJob.Server.HttpJob.Excute(httpJob, httpJob.JobName, null));
+                addreslut = BackgroundJob.Enqueue(() => Hangfire.HttpJob.Server.HttpJob.Excute(httpJob, httpJob.JobName,httpJob.QueueName,httpJob.IsRetry, null));
             }
             catch (Exception ec)
             {
@@ -44,7 +44,7 @@ namespace JobsServer.Controllers
         {
             try
             {
-                RecurringJob.AddOrUpdate(httpJob.JobName, () => Hangfire.HttpJob.Server.HttpJob.Excute(httpJob, httpJob.JobName, null), httpJob.Corn, TimeZoneInfo.Local);
+                RecurringJob.AddOrUpdate(httpJob.JobName, () => Hangfire.HttpJob.Server.HttpJob.Excute(httpJob, httpJob.JobName, httpJob.QueueName, httpJob.IsRetry, null), httpJob.Corn, TimeZoneInfo.Local);
             }
             catch (Exception ec)
             {
@@ -100,7 +100,7 @@ namespace JobsServer.Controllers
             var reslut = string.Empty;
             try
             {
-                reslut = BackgroundJob.Schedule(() => Hangfire.HttpJob.Server.HttpJob.Excute(httpJob, httpJob.JobName, null), TimeSpan.FromMinutes(httpJob.DelayFromMinutes));
+                reslut = BackgroundJob.Schedule(() => Hangfire.HttpJob.Server.HttpJob.Excute(httpJob, httpJob.JobName, httpJob.QueueName, httpJob.IsRetry, null), TimeSpan.FromMinutes(httpJob.DelayFromMinutes));
             }
             catch (Exception ec)
             {
@@ -128,7 +128,7 @@ namespace JobsServer.Controllers
                     }
                     else
                     {
-                        jobid = BackgroundJob.Enqueue(() => Hangfire.HttpJob.Server.HttpJob.Excute(k, k.JobName, null));
+                        jobid = BackgroundJob.Enqueue(() => Hangfire.HttpJob.Server.HttpJob.Excute(k, k.JobName, k.QueueName, k.IsRetry, null));
                     }
                 });
                 reslut = "true";
@@ -145,7 +145,7 @@ namespace JobsServer.Controllers
         /// <param name="httpJob"></param>
         public void RunContinueJob(Hangfire.HttpJob.Server.HttpJobItem httpJob)
         {
-            BackgroundJob.Enqueue(() => Hangfire.HttpJob.Server.HttpJob.Excute(httpJob, httpJob.JobName, null));
+            BackgroundJob.Enqueue(() => Hangfire.HttpJob.Server.HttpJob.Excute(httpJob, httpJob.JobName, httpJob.QueueName, httpJob.IsRetry, null));
         }
     }
     /// <summary>

@@ -462,8 +462,8 @@
                 mode: 'code'
             };
 
-            var normal_templete = "{\"Method\":\"POST\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"JobName\":\"\"}";
-            var recurring_templete = "{\"Method\":\"POST\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Corn\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"\",\"JobName\":\"\"}";
+            var normal_templete = "{\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"JobName\":\"\",\"IsRetry\":false}";
+            var recurring_templete = "{\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Corn\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"\",\"JobName\":\"\",\"IsRetry\":false}";
             //如果需要注入新增计划任务
             if (config.NeedAddNomalHttpJobButton) {
                 button =
@@ -700,9 +700,9 @@ var jobSearcher = new function () {
     var createSearchBox = function () {
         $('#search-box').closest('div').remove();
         $('.js-jobs-list').prepend('<div class="search-box-div">' +
-            '<input type="text" id="search-box" placeholder="请输入任务名称...">' +
+            '<input type="text" id="search-box" placeholder="请输入 JobName Or Args ...">' +
             //'<img class="loader-img" src ="" />' +
-            '<span class="glyphicon glyphicon-search" id="loaddata"> 查找中...</span>' +
+            '<span class="glyphicon glyphicon-search" id="loaddata"> Checking...</span>' +
             '<p id="total-items"></p>' +
             '</div>');
     };
