@@ -3,16 +3,16 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Description>Add ApiJob To Hangfire Use Redis,Sqlserver,Mysql,Storage and install as a windows server,Extended to the original author by Hangfire.httpjob 1.0.2 </Description>
+    <Description>Add ApiJob To Hangfire Use Redis,Sqlserver,Mysql,Storage and install as a windows server，allow add if  retry to job, allow seconds job ,Extended to the original author by Hangfire.httpjob 1.0.2</Description>
     <PackageLicenseUrl>https://github.com/gnsilence/HangfireHttpJob</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/gnsilence/HangfireHttpJob</PackageProjectUrl>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
     <PackageId>Hangfire.HttpJob.Ext</PackageId>
     <Authors>Hangfire.HttpJob.Ext</Authors>
     <Company>Hangfire.HttpJob.Ext</Company>
     <Product>Hangfire.HttpJob.Ext</Product>
-    <AssemblyVersion>1.0.0.3</AssemblyVersion>
-    <FileVersion>1.0.0.3</FileVersion>
+    <AssemblyVersion>1.0.0.4</AssemblyVersion>
+    <FileVersion>1.0.0.4</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

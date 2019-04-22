@@ -1,15 +1,16 @@
 使用说明
 ====
+拓展的目的是用来调用api接口，达到不依赖业务代码，部署方便，使用方便。
 
 快速使用核心功能集成到项目中：
 
-引用项目包 Install-Package Hangfire.HttpJob.Ext -Version 1.0.2 
+引用项目包 Install-Package Hangfire.HttpJob.Ext -Version 1.0.4 
 
 引用项目包 Install-Package Hangfire.HttpJob.Ext.Storage.All -Version 1.0.0 
 
-或者nuget管理器搜索包安装
+或者nuget管理器搜索以上包安装
 
-其中Hangfire.HttpJob.Ext.Storage.All 主要是集成了存储库：
+其中Hangfire.HttpJob.Ext.Storage.All 主要是集成了开源存储库方便使用：
 
 AzureDocumentDB，SqlServer，MySql， Oracle ，SQLite ，Redis, LiteDB , PostgreSql , Mongo 
 以及Dashboard.BasicAuthorization 升级到standard 2.0 
@@ -29,7 +30,7 @@ Windows服务部署
 
 Windows服务发布：直接发布webapi项目,在publish目录用管理员方式运行安装服务bat脚本，即可安装成功。
 
-可以多实例部署
+可以多实例部署，推荐使用redis集群+多实例部署实现高可用
 
 部分截图
 ====
@@ -72,21 +73,25 @@ redis集群测试
 ====
 ![image](https://github.com/gnsilence/HangfireHttpJob/blob/master/JobsServer/screenshots/apollo.png)
 
-其他功能参考项目源码可以添加
+其他功能
 ====
 
 1，邮件推送配置，使用的腾讯的smtp，需要去邮箱设置里开启端口和获取密码，使用的mailkit插件，可以设置邮件模板
-目前设置的为任务失败重试达到最大次数时会推送邮件，并将任务设置为失败。具体配置在appsetting中
+目前设置的为任务失败重试达到最大次数时会推送邮件，并将任务设置为失败。需要在appsetting中配置
 
-2，signalR推送，服务寄宿的webapi，使用webapi推送，需要对应版本的js才能支持推送到web
+2，signalR推送，服务寄宿的webapi，使用webapi推送，需要对应版本的js才能支持推送到web(参考源码)
 
-4，接口健康检查，可以配置检查地址，然后访问的地址后面加上hc，可以在ui界面查看检查情况，需要每个接口提供检查地址
-具体参考appsettings中的配置
 
-5，后台进程，用来实现长时间持续运行的任务
+3，接口健康检查，可以配置检查地址，然后访问的地址后面加上hc，可以在ui界面查看检查情况，需要每个接口提供检查地址
+具体参考appsettings中的配置(参考源码)
 
-6，暂停和继续任务，实现的原理是通过在set中添加任务属性，在过滤器中跳过执行达到暂停的目的，移除属性值后任务继续执行，
+4，后台进程，用来实现长时间持续运行的任务(一般用来执行长时间运行的任务)
+
+5，暂停和继续任务，实现的原理是通过在set中添加任务属性，在过滤器中跳过执行达到暂停的目的，移除属性值后任务继续执行，
 任务暂停后前台会渲染列表字体为红色，方便快速找出被暂停的任务
+
+6，新增重试，队列名称参数，可以在新增周期任务及计划任务中添加，实现手动分配队列，指定是否需要重试，在某些场景下，不需要重试时
+可以使用此设置。
 
 
 其他：
