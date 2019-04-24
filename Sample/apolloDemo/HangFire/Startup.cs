@@ -24,7 +24,7 @@ namespace HangFire
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            Redis = ConnectionMultiplexer.Connect("47.105.185.242,password=abc@123,allowAdmin=true,SyncTimeout=10000");
+            Redis = ConnectionMultiplexer.Connect("127.0.0.1,password=123456,allowAdmin=true,SyncTimeout=10000");
         }
 
         public static ConnectionMultiplexer Redis;
