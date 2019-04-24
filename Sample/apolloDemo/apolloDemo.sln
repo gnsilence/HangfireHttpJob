@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.156
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire", "HangFire\HangFire.csproj", "{2315229C-C097-4E82-A2FA-1648AA4975FA}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{CC07BA84-11DF-448C-AB2D-0017C87E38E0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2315229C-C097-4E82-A2FA-1648AA4975FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2315229C-C097-4E82-A2FA-1648AA4975FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2315229C-C097-4E82-A2FA-1648AA4975FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2315229C-C097-4E82-A2FA-1648AA4975FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC07BA84-11DF-448C-AB2D-0017C87E38E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC07BA84-11DF-448C-AB2D-0017C87E38E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC07BA84-11DF-448C-AB2D-0017C87E38E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC07BA84-11DF-448C-AB2D-0017C87E38E0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7262F0E1-5943-4825-8A7C-DF31D42CE7A7}
+	EndGlobalSection
+EndGlobal

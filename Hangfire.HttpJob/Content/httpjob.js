@@ -700,7 +700,7 @@ var jobSearcher = new function () {
     var createSearchBox = function () {
         $('#search-box').closest('div').remove();
         $('.js-jobs-list').prepend('<div class="search-box-div">' +
-            '<input type="text" id="search-box" placeholder="请输入 JobName Or Args ...">' +
+            '<input type="text" id="search-box" placeholder="Pelese Enter JobName Or Args ...">' +
             //'<img class="loader-img" src ="" />' +
             '<span class="glyphicon glyphicon-search" id="loaddata"> Checking...</span>' +
             '<p id="total-items"></p>' +
@@ -726,7 +726,7 @@ var jobSearcher = new function () {
             $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000000 .table-responsive table", 
                 function () {
                     var table = $('.table-responsive').find('table');
-                    var filtered = $(".page-header").text().substr(0, 4) === '定期作业' ? $(table).find('td[class=min-width]:contains(' + keyword + ')').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+                    var filtered = ($(".page-header").text().substr(0, 4) === '定期作业' || $(".page-header").text().substr(0, 4) === 'Recu') ? $(table).find('td[class=min-width]:contains(' + keyword + ')').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
                     $(table).find('tbody tr').remove();
                     $(table).find('tbody').append(filtered);
                     //如果作业已经暂停，则用红色字体标识
@@ -740,7 +740,7 @@ var jobSearcher = new function () {
                         }
                     });
                     $('#loaddata').css('visibility', 'hidden');
-                    $('#total-items').text("查询结果: " + filtered.length);
+                    $('#total-items').text("Check Result: " + filtered.length);
                 });
             return;
         }
@@ -748,7 +748,7 @@ var jobSearcher = new function () {
         $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000000 .table-responsive table",
             function () {
                 var table = $('.table-responsive').find('table');
-                var filtered = $(".page-header").text().substr(0, 4) === '定期作业' ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+                var filtered = ($(".page-header").text().substr(0, 4) === '定期作业' || $(".page-header").text().substr(0, 4)==='Recu')? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
                 $(table).find('tbody tr').remove();
                 $(table).find('tbody').append(filtered);
                 //如果作业已经暂停，则用红色字体标识
@@ -762,7 +762,7 @@ var jobSearcher = new function () {
                     }
                 });
                 $('#loaddata').css('visibility', 'hidden');
-                $('#total-items').text("查询结果: " + filtered.length);
+                $('#total-items').text("Check Result: " + filtered.length);
             });
     }
 };

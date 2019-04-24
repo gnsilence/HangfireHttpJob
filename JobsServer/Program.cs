@@ -47,7 +47,7 @@ namespace JobsServer
                 .UseUrls(HangfireSettings.Instance.UseApollo?ConfigSettings.Instance.ServiceAddress:HangfireSettings.Instance.ServiceAddress)//启用配置的地址
                 .ConfigureLogging((hostingContext, logging) =>
                 {
-                    logging.AddEventLog();//启用系统事件日志，
+                    //logging.AddEventLog();//启用系统事件日志，
                 })
                 .ConfigureAppConfiguration((context, config) =>
                 {

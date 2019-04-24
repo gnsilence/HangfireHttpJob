@@ -1,0 +1,11 @@
+version: '3.4'
+
+services:
+  hangfire:
+    image: hangfire
+    restart: always
+    build:
+      context: .
+      dockerfile: HangFire/Dockerfile
+    ports:
+    - "9006:80"

@@ -1,0 +1,11 @@
+version: '3.4'
+
+services:
+  jobsserver:
+    image: jobsserver
+    restart: always
+    build:
+      context: .
+      dockerfile: JobsServer/Dockerfile
+    ports:
+    - "9006:9006"

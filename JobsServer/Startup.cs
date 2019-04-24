@@ -31,6 +31,8 @@ using System.Net;
 using Hangfire.HttpJob.Support;
 using Hangfire.Server;
 using CommonUtils;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 namespace JobsServer
 {
@@ -50,7 +52,7 @@ namespace JobsServer
         }
         public static ConnectionMultiplexer Redis;
 
-        public static readonly string [] ApiQueues=new []{"apis","jobs","task","rjob","pjob","rejob", "default" };
+        public static readonly string[] ApiQueues = new[] { "apis", "jobs", "task", "rjob", "pjob", "rejob", "default" };
         public IConfiguration Configuration { get; }
         /// <summary>
         /// 是否使用apollo配置中心
@@ -59,12 +61,12 @@ namespace JobsServer
         public void ConfigureServices(IServiceCollection services)
         {
             //健康检查地址添加
-                var hostlist =UseApollo?JsonConvert.DeserializeObject<List<HealthCheckInfo>>(ConfigSettings.Instance.HostServers):HangfireSettings.Instance.HostServers;
-                //添加健康检查地址
-                hostlist.ForEach(s =>
-                {
-                    services.AddHealthChecks().AddUrlGroup(new Uri(s.Uri), s.httpMethod.ToLower() == "post" ? HttpMethod.Post : HttpMethod.Get, $"{s.Uri}");
-                });
+            var hostlist = UseApollo ? JsonConvert.DeserializeObject<List<HealthCheckInfo>>(ConfigSettings.Instance.HostServers) : HangfireSettings.Instance.HostServers;
+            //添加健康检查地址
+            hostlist.ForEach(s =>
+            {
+                services.AddHealthChecks().AddUrlGroup(new Uri(s.Uri), s.httpMethod.ToLower() == "post" ? HttpMethod.Post : HttpMethod.Get, $"{s.Uri}");
+            });
             //redis集群检查地址添加
             var redislist = UseApollo ? ConfigSettings.Instance.HangfireRedisConnectionString.Split(",").ToList() : HangfireSettings.Instance.HangfireRedisConnectionString.Split(",").ToList();
             redislist.ForEach(
@@ -95,17 +97,17 @@ namespace JobsServer
                     //}).UseHangfireHttpJob().UseConsole();
 
 
-                    if (UseApollo?ConfigSettings.Instance.UseSqlSerVer:HangfireSettings.Instance.UseSqlSerVer)
+                    if (UseApollo ? ConfigSettings.Instance.UseSqlSerVer : HangfireSettings.Instance.UseSqlSerVer)
                     {
 
                         //使用SQL server
-                        _ = config.UseSqlServerStorage(UseApollo?ConfigSettings.Instance.HangfireSqlserverConnectionString
-                            :HangfireSettings.Instance.HangfireSqlserverConnectionString, new Hangfire.SqlServer.SqlServerStorageOptions()
-                        {
-                            //每隔一小时检查过期job
-                            JobExpirationCheckInterval = TimeSpan.FromHours(1),
-                            QueuePollInterval = TimeSpan.FromSeconds(1)
-                        })
+                        _ = config.UseSqlServerStorage(UseApollo ? ConfigSettings.Instance.HangfireSqlserverConnectionString
+                            : HangfireSettings.Instance.HangfireSqlserverConnectionString, new Hangfire.SqlServer.SqlServerStorageOptions()
+                            {
+                                //每隔一小时检查过期job
+                                JobExpirationCheckInterval = TimeSpan.FromHours(1),
+                                QueuePollInterval = TimeSpan.FromSeconds(1)
+                            })
                         .UseHangfireHttpJob(new HangfireHttpJobOptions()
                         {
                             SendToMailList = HangfireSettings.Instance.SendMailList,
@@ -123,7 +125,7 @@ namespace JobsServer
                         .UseDashboardMetric(DashboardMetrics.AwaitingCount);
                     }
 
-                    if (UseApollo?ConfigSettings.Instance.UseRedis:HangfireSettings.Instance.UseRedis)
+                    if (UseApollo ? ConfigSettings.Instance.UseRedis : HangfireSettings.Instance.UseRedis)
                     {
                         //使用redis
                         config.UseRedisStorage(Redis, new Hangfire.Redis.RedisStorageOptions()
@@ -139,13 +141,13 @@ namespace JobsServer
                         })
                         .UseHangfireHttpJob(new HangfireHttpJobOptions()
                         {
-                            AddHttpJobButtonName="添加计划任务",
+                            AddHttpJobButtonName = "添加计划任务",
                             AddRecurringJobHttpJobButtonName = "添加定时任务",
                             EditRecurringJobButtonName = "编辑定时任务",
                             PauseJobButtonName = "暂停或开始",
                             DashboardTitle = "XXX公司任务管理",
-                            DashboardName="后台任务管理",
-                            DashboardFooter="XXX公司后台任务管理V1.0.0.0",
+                            DashboardName = "后台任务管理",
+                            DashboardFooter = "XXX公司后台任务管理V1.0.0.0",
                             SendToMailList = HangfireSettings.Instance.SendMailList,
                             SendMailAddress = HangfireSettings.Instance.SendMailAddress,
                             SMTPServerAddress = HangfireSettings.Instance.SMTPServerAddress,
@@ -165,11 +167,11 @@ namespace JobsServer
                         .UseDashboardMetric(DashboardMetrics.ServerCount);
                     }
 
-                    if (UseApollo?ConfigSettings.Instance.UseMySql:HangfireSettings.Instance.UseMySql)
+                    if (UseApollo ? ConfigSettings.Instance.UseMySql : HangfireSettings.Instance.UseMySql)
                     {
                         //使用mysql配置
                         config.UseStorage(new MySqlStorage(
-                            UseApollo?ConfigSettings.Instance.HangfireMysqlConnectionString:
+                            UseApollo ? ConfigSettings.Instance.HangfireMysqlConnectionString :
                             HangfireSettings.Instance.HangfireMysqlConnectionString,
                             new MySqlStorageOptions
                             {
@@ -251,6 +253,19 @@ namespace JobsServer
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            var supportedCultures = new[]
+            {
+                new CultureInfo("zh-CN"),
+                new CultureInfo("en-US")
+            };
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("zh-CN"),
+                // Formatting numbers, dates, etc.
+                SupportedCultures = supportedCultures,
+                // UI strings that we have localized.
+                SupportedUICultures = supportedCultures
+            });
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -285,7 +300,7 @@ namespace JobsServer
 
             app.UseHangfireDashboard("/job", new DashboardOptions
             {
-                AppPath = UseApollo?ConfigSettings.Instance.AppWebSite:HangfireSettings.Instance.AppWebSite,//返回时跳转的地址
+                AppPath = UseApollo ? ConfigSettings.Instance.AppWebSite : HangfireSettings.Instance.AppWebSite,//返回时跳转的地址
                 DisplayStorageConnectionString = false,//是否显示数据库连接信息
                 IsReadOnlyFunc = Context =>
                 {
@@ -311,6 +326,7 @@ namespace JobsServer
             //只读面板，只能读取不能操作
             app.UseHangfireDashboard("/job-read", new DashboardOptions
             {
+                IgnoreAntiforgeryToken = true,
                 AppPath = "#",//返回时跳转的地址
                 DisplayStorageConnectionString = false,//是否显示数据库连接信息
                 IsReadOnlyFunc = Context =>
