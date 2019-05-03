@@ -47,12 +47,12 @@ namespace MVCDemo
 
             services.AddHangfire(config =>
             {
-                ////使用redis
+                ////Use redis
                 //config.UseRedisStorage(Redis, new Hangfire.Redis.RedisStorageOptions()
                 //{
                 //    FetchTimeout = TimeSpan.FromMinutes(5),
                 //    Prefix = "{hangfire}:",
-                //    //活动服务器超时时间
+                //    //Invisibility Server TimeOut
                 //    InvisibilityTimeout = TimeSpan.FromHours(1),
                 //    //任务过期检查频率
                 //    ExpiryCheckInterval = TimeSpan.FromHours(1),
