@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Com.Ctrip.Framework.Apollo;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace apolloWebDemo
+namespace MVCDemo
 {
     public class Program
     {
@@ -20,14 +19,6 @@ namespace apolloWebDemo
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-            .ConfigureAppConfiguration((hostingContext, builder) =>
-            {
-                builder
-                .AddApollo(builder.Build().GetSection("apollo"))
-                .AddDefault()
-                .AddNamespace("application").AddNamespace("Hangfire.Common");
-                
-            })
-            .UseStartup<Startup>();
+                .UseStartup<Startup>();
     }
 }
