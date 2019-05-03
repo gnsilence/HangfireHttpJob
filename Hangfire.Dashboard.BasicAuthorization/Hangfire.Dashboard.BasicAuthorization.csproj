@@ -7,10 +7,12 @@
     <Authors>gnsilence</Authors>
     <Product>Hangfire.HttpJob.Ext.Dashboard.BasicAuthorization</Product>
     <Company>Hangfire.HttpJob.Ext.Dashboard.BasicAuthorization</Company>
+    <Version>1.0.1</Version>
+    <Description>Update Hangfire to 1.7.2</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.1" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.2" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.0" />
   </ItemGroup>
 

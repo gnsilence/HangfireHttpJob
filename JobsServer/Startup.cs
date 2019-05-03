@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Hangfire.MySql.Core;
 using System.Data;
 using Hangfire.HttpJob;
 using Hangfire.Console;
@@ -13,26 +12,20 @@ using StackExchange.Redis;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using System.Collections.Generic;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using System.Threading.Tasks;
-using System.Threading;
 using Newtonsoft.Json;
 using System.Linq;
-using System.Net.Mime;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http;
-using HealthChecks.Uris;
-using Hangfire.SQLite;
 using Hangfire.Heartbeat;
 using Hangfire.Heartbeat.Server;
 using Hangfire.Dashboard;
 using JobsServer.Hubs;
-using System.Net;
 using Hangfire.HttpJob.Support;
 using Hangfire.Server;
 using CommonUtils;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
+using Hangfire.MySql.Core;
 
 namespace JobsServer
 {
