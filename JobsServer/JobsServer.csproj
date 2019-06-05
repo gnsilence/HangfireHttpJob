@@ -17,7 +17,6 @@
     <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="2.2.2" />
     <PackageReference Include="AspNetCore.HealthChecks.UI" Version="2.2.17" />
     <PackageReference Include="AspNetCore.HealthChecks.Uris" Version="2.2.2" />
-    <PackageReference Include="Hangfire.Heartbeat" Version="0.3.4" />
     <PackageReference Include="Hangfire.HttpJob.Ext.Storage.All" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Version="2.2.0" />

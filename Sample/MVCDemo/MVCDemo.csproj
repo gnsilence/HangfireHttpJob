@@ -7,9 +7,9 @@
 
 
   <ItemGroup>
-    <PackageReference Include="Hangfire.HttpJob.Ext" Version="1.0.4" />
+    <PackageReference Include="Hangfire.HttpJob.Ext" Version="1.0.5" />
     <PackageReference Include="Hangfire.HttpJob.Ext.CommonUtils" Version="1.0.1" />
-    <PackageReference Include="Hangfire.HttpJob.Ext.Storage.All" Version="1.0.0" />
+    <PackageReference Include="Hangfire.HttpJob.Ext.Storage.All" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
   </ItemGroup>

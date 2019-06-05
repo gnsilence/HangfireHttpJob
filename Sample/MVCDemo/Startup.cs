@@ -61,7 +61,7 @@ namespace MVCDemo
                 //})
 
                 config.UseStorage(new MySqlStorage(
-                            "Server=127.0.0.1;Port=3306;Database=hangfire;Uid=root;Pwd=123456;charset=utf8;SslMode=none;Allow User Variables=True",
+                            "Server=47.105.185.242;Port=3306;Database=hangfire;Uid=root;Pwd=123456;charset=utf8;SslMode=none;Allow User Variables=True",
                             new MySqlStorageOptions
                             {
                                 TablePrefix = "hangfire",
