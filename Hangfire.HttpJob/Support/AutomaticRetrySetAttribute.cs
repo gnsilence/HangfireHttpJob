@@ -21,6 +21,8 @@ namespace Hangfire.HttpJob.Support
         /// </remarks>
         public static readonly int DefaultRetryAttempts = 5;
 
+        public static HangfireHttpJobOptions HangfireHttpJobOptions;
+
         private static readonly Func<long, int> DefaultDelayInSecondsByAttemptFunc = attempt =>
         {
             var random = new Random();
@@ -43,10 +45,12 @@ namespace Hangfire.HttpJob.Support
         /// </summary>
         public AutomaticRetrySetAttribute()
         {
+            _attempts = HangfireHttpJobOptions.AttemptsCountArray.Count;
+            _delaysInSeconds = HangfireHttpJobOptions.AttemptsCountArray.ToArray();
             //Attempts = DefaultRetryAttempts;
             //DelayInSecondsByAttemptFunc = DefaultDelayInSecondsByAttemptFunc;
             //LogEvents = true;
-            //OnAttemptsExceeded = AttemptsExceededAction.Fail;
+            _onAttemptsExceeded = AttemptsExceededAction.Fail;
             //Order = 20;
         }
 
@@ -105,7 +109,7 @@ namespace Hangfire.HttpJob.Support
         }
 
         /// <summary>
-        /// Gets or sets a candidate state for a background job that 
+        /// Gets or sets a candidate state for a background job that
         /// will be chosen when number of retry attempts exceeded.
         /// </summary>
         public AttemptsExceededAction OnAttemptsExceeded

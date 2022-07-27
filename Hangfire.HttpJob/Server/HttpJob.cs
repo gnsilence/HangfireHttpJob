@@ -12,21 +12,25 @@ using MailKit;
 using MimeKit;
 using MailKit.Net.Smtp;
 using Hangfire.HttpJob.Support;
-using CommonUtils;
 using NLog;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace Hangfire.HttpJob.Server
 {
     public class HttpJob
     {
-        /// <summary>
-        /// 是否使用apollo配置中心
-        /// </summary>
-        private static readonly bool UseApollo = ConfigSettings.Instance.UseApollo;
         private static readonly Logger logger = new LogFactory().GetCurrentClassLogger();
         public static HangfireHttpJobOptions HangfireHttpJobOptions;
         private static MimeMessage mimeMessage;
+        private readonly IHttpClientFactory _httpClientFactory;
+
+        public HttpJob(IHttpClientFactory httpClientFactory)
+        {
+            _httpClientFactory = httpClientFactory;
+        }
+
         /// <summary>
         /// 发送邮件
         /// </summary>
@@ -39,24 +43,13 @@ namespace Hangfire.HttpJob.Server
             try
             {
                 mimeMessage = new MimeMessage();
-                mimeMessage.From.Add(new MailboxAddress(UseApollo ? ConfigSettings.Instance.SendMailAddress : HangfireHttpJobOptions.SendMailAddress));
-                List<Emails> SendMailList = new List<Emails>();
-                if (UseApollo)
+                mimeMessage.From.Add(new MailboxAddress("mail", HangfireHttpJobOptions.SendMailAddress));
+                var SendMailList = HangfireHttpJobOptions.SendToMailList;
+                HangfireHttpJobOptions.SendToMailList.ForEach(k =>
                 {
-                    SendMailList = JsonConvert.DeserializeObject<List<Emails>>(ConfigSettings.Instance.SendMailList);
-                    SendMailList.ForEach(k =>
-                    {
-                        mimeMessage.To.Add(new MailboxAddress(k.Email));
-                    });
-                }
-                else
-                {
-                    HangfireHttpJobOptions.SendToMailList.ForEach(k =>
-                    {
-                        mimeMessage.To.Add(new MailboxAddress(k));
-                    });
-                }
-                mimeMessage.Subject = UseApollo ? ConfigSettings.Instance.SMTPSubject : HangfireHttpJobOptions.SMTPSubject;
+                    mimeMessage.To.Add(new MailboxAddress("mail", k));
+                });
+                mimeMessage.Subject = HangfireHttpJobOptions.SMTPSubject;
                 var builder = new BodyBuilder
                 {
                     //builder.TextBody = $"执行出错,任务名称【{item.JobName}】,错误详情：{ex}";
@@ -64,11 +57,10 @@ namespace Hangfire.HttpJob.Server
                 };
                 mimeMessage.Body = builder.ToMessageBody();
                 var client = new SmtpClient();
-                client.Connect(UseApollo ? ConfigSettings.Instance.SMTPServerAddress : HangfireHttpJobOptions.SMTPServerAddress,
-                    UseApollo ? ConfigSettings.Instance.SMTPPort : HangfireHttpJobOptions.SMTPPort, true);     //连接服务
+                client.Connect(HangfireHttpJobOptions.SMTPServerAddress, HangfireHttpJobOptions.SMTPPort, true);     //连接服务
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
-                client.Authenticate(UseApollo ? ConfigSettings.Instance.SendMailAddress : HangfireHttpJobOptions.SendMailAddress,
-                   UseApollo ? ConfigSettings.Instance.SMTPPwd : HangfireHttpJobOptions.SMTPPwd); //验证账号密码
+                client.Authenticate(HangfireHttpJobOptions.SendMailAddress,
+                    HangfireHttpJobOptions.SMTPPwd); //验证账号密码
                 client.Send(mimeMessage);
                 client.Disconnect(true);
             }
@@ -79,12 +71,13 @@ namespace Hangfire.HttpJob.Server
             }
             return true;
         }
+
         /// <summary>
         /// 设置httpclient
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public static HttpClient GetHttpClient(HttpJobItem item)
+        public static HttpClient GetHttpClient(HttpJobItem item, HttpClient httpClient)
         {
             var handler = new HttpClientHandler();
             if (HangfireHttpJobOptions.Proxy == null)
@@ -95,49 +88,51 @@ namespace Hangfire.HttpJob.Server
             {
                 handler.Proxy = HangfireHttpJobOptions.Proxy;
             }
-            //设置超时时间
-            var HttpClient = new HttpClient(handler)
-            {
-                Timeout = TimeSpan.FromSeconds(item.Timeout == 0 ? HangfireHttpJobOptions.GlobalHttpTimeOut : item.Timeout),
-            };
+            httpClient.Timeout = TimeSpan.FromSeconds(item.Timeout == 0 ? HangfireHttpJobOptions.GlobalHttpTimeOut : item.Timeout);
+            ////设置超时时间
+            //var HttpClient = new HttpClient(handler)
+            //{
+            //    Timeout = TimeSpan.FromSeconds(item.Timeout == 0 ? HangfireHttpJobOptions.GlobalHttpTimeOut : item.Timeout),
+            //};
 
             if (!string.IsNullOrEmpty(item.BasicUserName) && !string.IsNullOrEmpty(item.BasicPassword))
             {
                 var byteArray = Encoding.ASCII.GetBytes(item.BasicUserName + ":" + item.BasicPassword);
-                HttpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-
+                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
             }
-            return HttpClient;
+            return httpClient;
         }
-        /// <summary>
-        /// signalR推送使用
-        /// </summary>
-        /// <param name="url"></param>
-        /// <param name="data"></param>
-        /// <param name="statuscode"></param>
-        /// <returns></returns>
-        public static string SendRequest(string url, string data)
-        {
-            var item = new HttpJobItem()
-            {
-                Data = "{" + $"\"message\":\"{data}\"" + "}",
-                Url = url,
-                Method = "post",
-                ContentType = "application/json"
-            };
-            var client = GetHttpClient(item);
-            var httpMesage = PrepareHttpRequestMessage(item);
-            _ = client.SendAsync(httpMesage).GetAwaiter().GetResult();
-            var httpcontent = new StringContent(item.Data.ToString());
-            client.DefaultRequestHeaders.Add("Method", "Post");
-            httpcontent.Headers.ContentType = new MediaTypeHeaderValue(item.ContentType);
-            client.DefaultRequestHeaders.Add("UserAgent",
-      "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
-            client.DefaultRequestHeaders.Add("KeepAlive", "false");
-            _ = client.PostAsync(item.Url, httpcontent).GetAwaiter().GetResult();
-            string result = httpcontent.ReadAsStringAsync().GetAwaiter().GetResult();
-            return result;
-        }
+
+        //  /// <summary>
+        //  /// signalR推送使用
+        //  /// </summary>
+        //  /// <param name="url"></param>
+        //  /// <param name="data"></param>
+        //  /// <param name="statuscode"></param>
+        //  /// <returns></returns>
+        //  public static string SendRequest(string url, string data)
+        //  {
+        //      var item = new HttpJobItem()
+        //      {
+        //          Data = "{" + $"\"message\":\"{data}\"" + "}",
+        //          Url = url,
+        //          Method = "post",
+        //          ContentType = "application/json"
+        //      };
+        //      var client = GetHttpClient(item);
+        //      var httpMesage = PrepareHttpRequestMessage(item);
+        //      _ = client.SendAsync(httpMesage).GetAwaiter().GetResult();
+        //      var httpcontent = new StringContent(item.Data.ToString());
+        //      client.DefaultRequestHeaders.Add("Method", "Post");
+        //      httpcontent.Headers.ContentType = new MediaTypeHeaderValue(item.ContentType);
+        //      client.DefaultRequestHeaders.Add("UserAgent",
+        //"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
+        //      client.DefaultRequestHeaders.Add("KeepAlive", "false");
+        //      _ = client.PostAsync(item.Url, httpcontent).GetAwaiter().GetResult();
+        //      string result = httpcontent.ReadAsStringAsync().GetAwaiter().GetResult();
+        //      return result;
+        //  }
+
         /// <summary>
         /// 邮件模板
         /// </summary>
@@ -147,7 +142,7 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         private static string SethtmlBody(string jobname, string url, string exception)
         {
-            var title = UseApollo ? ConfigSettings.Instance.SMTPSubject : HangfireHttpJobOptions.SMTPSubject;
+            var title = HangfireHttpJobOptions.SMTPSubject;
             var htmlbody = $@"<h3 align='center'>{title}</h3>
                             <h3>执行时间：</h3>
                             <p>
@@ -159,7 +154,7 @@ namespace Hangfire.HttpJob.Server
                             <h3>
                                 请求路径：{url}
                             </h3>
-                            <h3><span></span> 
+                            <h3><span></span>
                                 执行结果：<br/>
                             </h3>
                             <p>
@@ -167,6 +162,7 @@ namespace Hangfire.HttpJob.Server
                             </p> ";
             return htmlbody;
         }
+
         public static HttpRequestMessage PrepareHttpRequestMessage(HttpJobItem item)
         {
             var request = new HttpRequestMessage(new HttpMethod(item.Method), item.Url);
@@ -181,18 +177,17 @@ namespace Hangfire.HttpJob.Server
             }
             return request;
         }
-        private const int num = 3;
+
         /// <summary>
         /// 执行任务，DelaysInSeconds(重试时间间隔/单位秒)
         /// </summary>
         /// <param name="item"></param>
         /// <param name="jobName"></param>
         /// <param name="context"></param>
-        [AutomaticRetrySet(Attempts = num, DelaysInSeconds = new[] { 20, 30, 60 }, LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Fail)]
-        [AutomaticRetry(Attempts =0,OnAttemptsExceeded =AttemptsExceededAction.Fail)]
-        [DisplayName("Args : [  JobName : {1}  |  QueueName : {2}  |  IsRetry : {3} ]")]
+        [AutomaticRetrySet(LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
+        [DisplayName("Args : [  JobName : {1}  |  Queue : {2}  |  IsRetry : {3} ]")]
         [JobFilter(timeoutInSeconds: 3600)]
-        public static void Excute(HttpJobItem item, string jobName = null,string queuename=null,bool isretry=false, PerformContext context = null)
+        public async Task ExcuteAsync(HttpJobItem item, string jobName = null, string queuename = null, bool isretry = false, PerformContext context = null)
         {
             try
             {
@@ -201,12 +196,13 @@ namespace Hangfire.HttpJob.Server
                 context.WriteLine($"任务开始执行,执行时间{DateTime.Now.ToString()}");
                 context.WriteLine($"任务名称:{jobName}");
                 context.WriteLine($"参数:{JsonConvert.SerializeObject(item)}");
-                var client = GetHttpClient(item);
+                var client = _httpClientFactory.CreateClient("httpjob");
+                client = GetHttpClient(item, client);
                 var httpMesage = PrepareHttpRequestMessage(item);
                 var httpResponse = new HttpResponseMessage();
-                httpResponse = SendUrlRequest(item, client, httpMesage);
+                httpResponse = await SendUrlRequest(item, client, httpMesage);
                 HttpContent content = httpResponse.Content;
-                string result = content.ReadAsStringAsync().GetAwaiter().GetResult();
+                string result = await content.ReadAsStringAsync();
                 context.WriteLine($"执行结果：{result}");
             }
             catch (Exception ex)
@@ -214,9 +210,7 @@ namespace Hangfire.HttpJob.Server
                 //获取重试次数
                 var count = context.GetJobParameter<string>("RetryCount");
                 context.SetTextColor(ConsoleTextColor.Red);
-                //signalR推送
-                //SendRequest(UseApollo?ConfigSettings.Instance.ServiceAddress:ConfigSettings.Instance.URL+"/api/Publish/EveryOne", "测试");
-                if (count == "3"&&ConfigSettings.Instance.UseEmail)//重试达到三次的时候发邮件通知
+                if (count == HangfireHttpJobOptions.AttemptsCountArray.Count().ToString() && HangfireHttpJobOptions.UseEmail)//重试达到三次的时候发邮件通知
                 {
                     SendEmail(item.JobName, item.Url, ex.ToString());
                 }
@@ -225,6 +219,7 @@ namespace Hangfire.HttpJob.Server
                 throw;//不抛异常不会执行重试操作
             }
         }
+
         /// <summary>
         /// 发送请求
         /// </summary>
@@ -232,7 +227,7 @@ namespace Hangfire.HttpJob.Server
         /// <param name="client"></param>
         /// <param name="httpMesage"></param>
         /// <returns></returns>
-        private static HttpResponseMessage SendUrlRequest(HttpJobItem item, HttpClient client, HttpRequestMessage httpMesage)
+        private async Task<HttpResponseMessage> SendUrlRequest(HttpJobItem item, HttpClient client, HttpRequestMessage httpMesage)
         {
             HttpResponseMessage httpResponse;
             if (item.Method.ToLower() == "post")
@@ -244,17 +239,14 @@ namespace Hangfire.HttpJob.Server
           "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36");
                 client.DefaultRequestHeaders.Add("KeepAlive", "false");
 
-                httpResponse = client.PostAsync(item.Url, httpcontent).GetAwaiter().GetResult();
+                httpResponse = await client.PostAsync(item.Url, httpcontent);
             }
             else
             {
-                httpResponse = client.SendAsync(httpMesage).GetAwaiter().GetResult();
+                httpResponse = await client.SendAsync(httpMesage);
             }
 
             return httpResponse;
         }
     }
-
-
-
 }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -14,6 +15,7 @@ namespace Hangfire.HttpJob.Server
     public class HttpJobDispatcher : IDashboardDispatcher
     {
         private static readonly ILog Logger = LogProvider.For<HttpJobDispatcher>();
+
         public HttpJobDispatcher(HangfireHttpJobOptions options)
         {
             if (options == null)
@@ -88,6 +90,7 @@ namespace Hangfire.HttpJob.Server
                     case "backgroundjob":
                         result = AddHttpbackgroundjob(jobItem);
                         break;
+
                     case "recurringjob":
                         if (string.IsNullOrEmpty(jobItem.Corn))
                         {
@@ -96,6 +99,7 @@ namespace Hangfire.HttpJob.Server
                         }
                         result = AddHttprecurringjob(jobItem);
                         break;
+
                     case "editrecurringjob":
                         if (string.IsNullOrEmpty(jobItem.Corn))
                         {
@@ -104,9 +108,11 @@ namespace Hangfire.HttpJob.Server
                         }
                         result = AddHttprecurringjob(jobItem);
                         break;
+
                     case "pausejob":
                         result = PauseOrRestartJob(jobItem.JobName);
                         break;
+
                     default:
                         context.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
                         return Task.FromResult(false);
@@ -124,7 +130,6 @@ namespace Hangfire.HttpJob.Server
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     return Task.FromResult(false);
                 }
-
             }
             catch (Exception ex)
             {
@@ -133,7 +138,6 @@ namespace Hangfire.HttpJob.Server
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 return Task.FromResult(false);
             }
-
         }
 
         public HttpJobItem GetJobItem(DashboardContext _context)
@@ -188,7 +192,7 @@ namespace Hangfire.HttpJob.Server
         {
             try
             {
-                BackgroundJob.Schedule(() => HttpJob.Excute(jobItem, jobItem.JobName,jobItem.QueueName,jobItem.IsRetry, null), TimeSpan.FromMinutes(jobItem.DelayFromMinutes));
+                BackgroundJob.Schedule<HttpJob>(a => a.ExcuteAsync(jobItem, jobItem.JobName, jobItem.QueueName, jobItem.IsRetry, null), TimeSpan.FromMinutes(jobItem.DelayFromMinutes));
                 return true;
             }
             catch (Exception ex)
@@ -197,6 +201,7 @@ namespace Hangfire.HttpJob.Server
                 return false;
             }
         }
+
         /// <summary>
         /// 暂停或者开始任务
         /// </summary>
@@ -211,7 +216,6 @@ namespace Hangfire.HttpJob.Server
                     var conts = connection.GetAllItemsFromSet($"JobPauseOf:{jobname}");
                     if (conts.Contains("true"))
                     {
-
                         tran.RemoveFromSet($"JobPauseOf:{jobname}", "true");
                         tran.AddToSet($"JobPauseOf:{jobname}", "false");
                         tran.Commit();
@@ -226,6 +230,7 @@ namespace Hangfire.HttpJob.Server
             }
             return true;
         }
+
         /// <summary>
         /// 获取已经暂停的任务
         /// </summary>
@@ -248,6 +253,7 @@ namespace Hangfire.HttpJob.Server
             }
             return pauselist;
         }
+
         /// <summary>
         /// 添加周期性作业
         /// </summary>
@@ -259,13 +265,16 @@ namespace Hangfire.HttpJob.Server
             var server = JobStorage.Current.GetMonitoringApi().Servers().
                 Where(p => p.Queues.Count > 0).FirstOrDefault();
             var queues = server.Queues.ToList();
-            if (!queues.Exists(p => p== jobItem.QueueName.ToLower()) || queues.Count == 0)
+            if (!queues.Exists(p => p == jobItem.QueueName.ToLower()) || queues.Count == 0)
             {
                 return false;
             }
             try
             {
-                RecurringJob.AddOrUpdate(jobItem.JobName, () => HttpJob.Excute(jobItem, jobItem.JobName,jobItem.QueueName,jobItem.IsRetry, null), jobItem.Corn, TimeZoneInfo.Local, jobItem.QueueName.ToLower());
+                RecurringJob.AddOrUpdate<HttpJob>(jobItem.JobName, jobItem.QueueName, a => a.ExcuteAsync(jobItem, jobItem.JobName, jobItem.QueueName, jobItem.IsRetry, null), jobItem.Corn, new RecurringJobOptions()
+                {
+                    TimeZone = TimeZoneInfo.Local
+                });
                 return true;
             }
             catch (Exception ex)

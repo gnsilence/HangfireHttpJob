@@ -1,18 +1,15 @@
 ﻿(function (hangfire) {
-
     hangfire.HttpJob = (function () {
         function HttpJob() {
             this._initialize();
         }
 
         HttpJob.prototype._initialize = function () {
-           
             /*
           生成corn表达式相关方法
            */
             /*配置类型声明*/
             var Type = {
-
                 /**
                  * 匹配 *
                  */
@@ -38,7 +35,6 @@
                     "name": "Cyclic",
                     "keyword": "-",
                     "set": function (name, value) {
-
                         var vr = value.split(this.keyword);
                         var b = vr.length === 2;
 
@@ -305,7 +301,7 @@
             ];
             /*
              *  单选框按钮 name
-             * 
+             *
              */
             var getChecked = function (name) {
                 return $("input[name='" + name + "']:checked").val();
@@ -314,16 +310,14 @@
             /*
              *  单选框按钮 name
              *  单选框 待设置的值
-             * 
+             *
              */
             var setChecked = function (name, value) {
                 $("input[name='" + name + "'][value='" + value + "']").prop("checked", true);
             };
 
-
             //init
             $(function () {
-
                 var $result = $("#result");
 
                 /**
@@ -340,7 +334,6 @@
                     if (r) {
                         $result.val(r.trim());
                     }
-
                 };
 
                 /**
@@ -367,7 +360,6 @@
                         }
                     });
                 };
-
 
                 /**
                  * 下拉框填充
@@ -397,9 +389,7 @@
                     }
                 });
 
-
                 //绑定事件
-
 
                 var $tabContentInput = $(".tab-content");
 
@@ -431,7 +421,6 @@
                 } catch (e) {
                     Console.log(e);
                 }
-
             });
             var config = window.Hangfire.httpjobConfig;
             if (!config) return;
@@ -447,7 +436,6 @@
             if (!config.NeedAddNomalHttpJobButton && !config.NeedAddRecurringHttpJobButton && !config.NeedAddCronButton && !config.NeedEditRecurringJobButton) {
                 return;
             }
-
 
             var button = '';
             var AddCronButton = '';
@@ -487,9 +475,7 @@
                     ' </div>' +
                     ' </div>' +
                     ' </div>';
-
             }
-
 
             //如果需要注入新增周期性任务
             if (config.NeedAddRecurringHttpJobButton) {
@@ -516,7 +502,6 @@
                     ' </div>';
             }
 
-
             //如果需要注入编辑任务
 
             if (config.NeedEditRecurringJobButton) {
@@ -524,7 +509,7 @@
                     '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" id="EditJob">' +
                     '<span class="glyphicon glyphicon-pencil"> ' + config.EditRecurringJobButtonName + '</span>' +
                     '</button>';
-                divModel =
+                divEditModel =
                     '<div class="modal inmodal" id="httpJobModal" tabindex="-1" role="dialog" aria-hidden="true">' +
                     '<div class="modal-dialog">' +
                     '<div class="modal-content">' +
@@ -542,7 +527,6 @@
                     ' </div>' +
                     ' </div>';
             }
-
 
             if (config.NeedAddCronButton) {
                 AddCronButton = '<button type="button" class="js-jobs-list-command btn btn-sm btn-primary" style="float:inherit;margin-left:10px" id="AddCron">' +
@@ -563,6 +547,7 @@
             $('.page-header').append(AddCronButton);
             $('.btn-toolbar-top').append(PauseButton);
             $(document.body).append(divModel);
+            $(document.body).append(divEditModel);
 
             var container = $('.editor_holder')[0];
 
@@ -630,7 +615,7 @@
                 if (!$(".js-jobs-list-checkbox").is(':checked')) {
                     alert("请选择要编辑的任务"); return;
                 } else {
-                    if ($("input[type=checkbox]:checked").val() === "on" && $("table tbody tr").size() > 1) { alert("只能选择一项任务进行编辑"); return; }
+                    if ($("input[type=checkbox]:checked").val() === "on" && $("table tbody tr").length > 1) { alert("只能选择一项任务进行编辑"); return; }
                     $(".modal-title").html(config.EditRecurringJobButtonName);
                     $.ajax({
                         type: "post",
@@ -643,7 +628,6 @@
                             window.jsonEditor.format();
                             $('#httpJobModal').modal('show');
                         }
-
                     });
                 }
             });
@@ -655,7 +639,6 @@
                 $('#httpJobModal').modal('hide');
                 window.jsonEditor.setText('{}');
             });
-
 
             $('#addhttpJob_save-model').click(function () {
                 var url = $(this).data("url");
@@ -669,7 +652,6 @@
                     "data": JSON.stringify(window.jsonEditor.get())
                 }
                 $.ajax(settings).done(function (response) {
-
                     alert('success');
                     $('#httpJobModal').modal('hide');
                     window.jsonEditor.setText('{}');
@@ -682,9 +664,7 @@
         };
 
         return HttpJob;
-
     })();
-
 })(window.Hangfire = window.Hangfire || {});
 
 //找出已经暂停的job
@@ -696,7 +676,6 @@ function GetPausedJobs() {
 }
 //搜索框拓展,在查找的记录中查询，无需查库
 var jobSearcher = new function () {
-
     var createSearchBox = function () {
         $('#search-box').closest('div').remove();
         $('.js-jobs-list').prepend('<div class="search-box-div">' +
@@ -723,7 +702,7 @@ var jobSearcher = new function () {
         //在所有查询结果中查找满足条件的，模糊匹配时区分大小写
         //只读面板下筛选数据操作
         if (window.location.href.indexOf('read') >= 0) {
-            $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000000 .table-responsive table", 
+            $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000000 .table-responsive table",
                 function () {
                     var table = $('.table-responsive').find('table');
                     var filtered = ($(".page-header").text().substr(0, 4) === '定期作业' || $(".page-header").text().substr(0, 4) === 'Recu') ? $(table).find('td[class=min-width]:contains(' + keyword + ')').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
@@ -748,7 +727,7 @@ var jobSearcher = new function () {
         $(".table-responsive table").load(window.location.href.split('?')[0] + "?from=0&count=1000000 .table-responsive table",
             function () {
                 var table = $('.table-responsive').find('table');
-                var filtered = ($(".page-header").text().substr(0, 4) === '定期作业' || $(".page-header").text().substr(0, 4)==='Recu')? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
+                var filtered = ($(".page-header").text().substr(0, 4) === '定期作业' || $(".page-header").text().substr(0, 4) === 'Recu') ? $(table).find('input.js-jobs-list-checkbox[value*=' + keyword + ']').closest('tr') : $(table).find('a[class=job-method]:contains(' + keyword + ')').closest('tr');
                 $(table).find('tbody tr').remove();
                 $(table).find('tbody').append(filtered);
                 //如果作业已经暂停，则用红色字体标识

@@ -26,6 +26,7 @@ using CommonUtils;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using Hangfire.MySql.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace JobsServer
 {
@@ -43,14 +44,17 @@ namespace JobsServer
                 Redis = ConnectionMultiplexer.Connect(HangfireSettings.Instance.HangfireRedisConnectionString);
             }
         }
+
         public static ConnectionMultiplexer Redis;
 
         public static readonly string[] ApiQueues = new[] { "apis", "jobs", "task", "rjob", "pjob", "rejob", "default" };
         public IConfiguration Configuration { get; }
+
         /// <summary>
         /// 是否使用apollo配置中心
         /// </summary>
         private static readonly bool UseApollo = ConfigSettings.Instance.UseApollo;
+
         public void ConfigureServices(IServiceCollection services)
         {
             //健康检查地址添加
@@ -71,6 +75,8 @@ namespace JobsServer
                     }
                 }
                 );
+            services.Configure<KestrelServerOptions>(x => x.AllowSynchronousIO = true);
+            // .Configure<IISServerOptions>(x => x.AllowSynchronousIO = true);
             //services.AddHealthChecks().AddRedis(HangfireSettings.Instance.HangfireRedisConnectionString);
             services.AddHangfire(
                 config =>
@@ -89,10 +95,8 @@ namespace JobsServer
                     //    TransactionTimeout = TimeSpan.FromMinutes(1),
                     //}).UseHangfireHttpJob().UseConsole();
 
-
                     if (UseApollo ? ConfigSettings.Instance.UseSqlSerVer : HangfireSettings.Instance.UseSqlSerVer)
                     {
-
                         //使用SQL server
                         _ = config.UseSqlServerStorage(UseApollo ? ConfigSettings.Instance.HangfireSqlserverConnectionString
                             : HangfireSettings.Instance.HangfireSqlserverConnectionString, new Hangfire.SqlServer.SqlServerStorageOptions()
@@ -190,9 +194,9 @@ namespace JobsServer
                                 SMTPSubject = HangfireSettings.Instance.SMTPSubject
                             });//启用http任务
                     }
-
                 }
                 );
+
             #region SignalR
 
             services.AddSignalR();
@@ -238,7 +242,9 @@ namespace JobsServer
             }));
             //依赖注入
             services.AddSingleton<IServiceProvider, ServiceProvider>();
-            #endregion
+
+            #endregion SignalR
+
             services.AddHealthChecksUI();
             services.AddMvc();
         }
@@ -275,7 +281,9 @@ namespace JobsServer
             //服务器资源检测频率
             additionalProcesses: new IBackgroundProcess[] { new SystemMonitor(checkInterval: TimeSpan.FromSeconds(1)) }//new[] { new SystemMonitor(checkInterval: TimeSpan.FromSeconds(1))}
             );
+
             #region 后台进程
+
             if (HangfireSettings.Instance.UseBackWorker)
             {
                 var listprocess = new List<IBackgroundProcess>
@@ -289,7 +297,8 @@ namespace JobsServer
                     Queues = new[] { "test", "api", "demo" }
                 }, additionalProcesses: listprocess);
             }
-            #endregion
+
+            #endregion 后台进程
 
             app.UseHangfireDashboard("/job", new DashboardOptions
             {
@@ -297,7 +306,6 @@ namespace JobsServer
                 DisplayStorageConnectionString = false,//是否显示数据库连接信息
                 IsReadOnlyFunc = Context =>
                 {
-
                     return false;
                 },
                 Authorization = new[] { new BasicAuthAuthorizationFilter(new BasicAuthAuthorizationFilterOptions
@@ -379,7 +387,9 @@ namespace JobsServer
                 setup.UIPath = "/hc"; // 健康检查的UI面板地址
                 setup.ApiPath = "/hc-api"; // 用于api获取json的检查数据
             });
+
             #region SignalR
+
             //跨域支持
             app.UseCors("CorsPolicy");
             app.UseSignalR(routes =>
@@ -387,7 +397,9 @@ namespace JobsServer
                 routes.MapHub<SignalrHubs>("/Hubs");
             });
             app.UseWebSockets();
-            #endregion
+
+            #endregion SignalR
+
             app.UseMvc();
         }
     }

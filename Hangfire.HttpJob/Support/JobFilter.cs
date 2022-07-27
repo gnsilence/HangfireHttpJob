@@ -1,5 +1,4 @@
-﻿using CommonUtils;
-using Hangfire.Client;
+﻿using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.HttpJob.Server;
 using Hangfire.Logging;
@@ -28,6 +27,9 @@ namespace Hangfire.HttpJob.Support
         /// 分布式锁过期时间
         /// </summary>
         private readonly int _timeoutInSeconds;
+
+        public static HangfireHttpJobOptions HangfireHttpJobOptions;
+
         public JobFilter(int timeoutInSeconds)
         {
             if (timeoutInSeconds < 0)
@@ -36,14 +38,15 @@ namespace Hangfire.HttpJob.Support
             }
             _timeoutInSeconds = timeoutInSeconds;
         }
+
         private static readonly Logger logger = new LogFactory().GetCurrentClassLogger();
+
         public void OnCreated(CreatedContext filterContext)
         {
             logger.Info(
             "创建任务 `{0}` id为 `{1}`",
             filterContext.Job.Method.Name,
             filterContext.BackgroundJob?.Id);
-
         }
 
         public void OnCreating(CreatingContext filterContext)
@@ -95,7 +98,7 @@ namespace Hangfire.HttpJob.Support
         public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
             //设置过期时间，任务将在三天后过期，过期的任务会自动被扫描并删除
-            context.JobExpirationTimeout = TimeSpan.FromDays(ConfigSettings.Instance.UseApollo?ConfigSettings.Instance.AutomaticDelete:3);
+            context.JobExpirationTimeout = TimeSpan.FromDays(HangfireHttpJobOptions.AutomaticDelete);
         }
 
         public void OnStateElection(ElectStateContext context)
@@ -111,8 +114,9 @@ namespace Hangfire.HttpJob.Support
 
         public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-            context.JobExpirationTimeout = TimeSpan.FromDays(ConfigSettings.Instance.UseApollo ? ConfigSettings.Instance.AutomaticDelete : 3);
+            context.JobExpirationTimeout = TimeSpan.FromDays(HangfireHttpJobOptions.AutomaticDelete);
         }
+
         /// <summary>
         /// 清除日志文件，每隔20天按日期清理一次
         /// </summary>
