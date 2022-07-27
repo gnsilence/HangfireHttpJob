@@ -1,17 +1,17 @@
 2022-7-27
 ====
-破坏性更新
-1，移除配置中心，identityserver等不实用的配置
-2,升级hangfire 到最新版1.8.0 RC1,添加 .net6的示例项目 移除旧的示例项目
-3，重要变化：
-job任务使用HttpClientFactory代替直接使用HttpClient发送请求，httpjob 的创建，发送接口请求全部改为异步方法
-加入Kestrel参数的异步io设置(iis下需要在宿主项目设置异步io) 需要使用Service.AddHttpJob来配置，可参考示例项目
-增加配置项，现在重试次数需要在配置中进行配置，数组的长度就是重试次数，增加任务过期天数配置
-Dashboard UI 增加暗黑模式，根据电脑系统，黑色及浅色主题自动切换 1.8.0 新特性
-现在可以通过 DashboardRoutes.AddStylesheet 及 DashboardRoutes.AddJavaScript 注入自定义样式及脚本，可以实现修改系统样式及添加自定义功能  1.8.0 新特性
-修复.net 6 下 增加httpjob失败的bug
+# 破坏性更新
+## 1：移除配置中心，identityserver等不实用的配置
+## 2：升级hangfire 到最新版1.8.0 RC1,添加 .net6的示例项目 移除旧的示例项目
+## 3：重要变化：
+### job任务使用HttpClientFactory代替直接使用HttpClient发送请求，httpjob 的创建，发送接口请求全部改为异步方法
+### 加入Kestrel参数的异步io设置(iis下需要在宿主项目设置异步io) 需要使用Service.AddHttpJob来配置，可参考示例项目
+### 增加配置项，现在重试次数需要在配置中进行配置，数组的长度就是重试次数，增加任务过期天数配置
+### Dashboard UI 增加暗黑模式，根据电脑系统，黑色及浅色主题自动切换 1.8.0 新特性
+### 现在可以通过 DashboardRoutes.AddStylesheet 及 DashboardRoutes.AddJavaScript 注入自定义样式及脚本，可以实现修改系统样式及添加自定义功能  1.8.0 新特性
+### 修复.net 6 下 增加httpjob失败的bug
 
-
+********
 以下文档废弃：
 2019.5.3
 ====
