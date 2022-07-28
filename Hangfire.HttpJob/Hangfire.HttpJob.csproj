@@ -3,19 +3,21 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Description>破坏性更新
-1，移除配置中心，identityserver等不实用的配置
-2,升级hangfire 到最新版1.8.0 RC1,添加 .net6的示例项目 移除旧的示例项目
-3，重要变化：
-job任务使用HttpClientFactory代替直接使用HttpClient发送请求，httpjob 的创建，发送接口请求全部改为异步方法
-加入Kestrel参数的异步io设置(iis下需要在宿主项目设置异步io) 需要使用Service.AddHttpJob来配置，可参考示例项目
-增加配置项，现在重试次数需要在配置中进行配置，数组的长度就是重试次数，增加任务过期天数配置
-Dashboard UI 增加暗黑模式，根据电脑系统，黑色及浅色主题自动切换 1.8.0 新特性
-现在可以通过 DashboardRoutes.AddStylesheet 及 DashboardRoutes.AddJavaScript 注入自定义样式及脚本，可以实现修改系统样式及添加自定义功能  1.8.0 新特性
-修复.net 6 下 增加httpjob失败的bug</Description>
+    <Description>* 彻底移除内置nlog日志，默认使用宿主程序日志，可任意使用Serilog，log4net等，示例程序已经提供配置方式样例
+* 移除原有分布式锁方式，改为job参数，添加job时可以指定分布式锁的过期时间，job新增header参数
+   - 分布式锁超时时间字段：LockTimeOut 单位秒
+   - header 参数为数组，key/value 格式 如： "Headers": [
+    {
+      "Key": "Test",
+      "Value": "123"
+    }
+  ]
+*  暂替作业按钮执行逻辑修改，移动到作业准备阶段拦截，现在暂停作业后，作业不会进行任何调用，不会进入已完成列表
+* 修复CultureInfo 设置为中文，时区仍然为utc的bug
+* 修改邮件发送方式为异步发送</Description>
     <PackageLicenseUrl>https://github.com/gnsilence/HangfireHttpJob</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/gnsilence/HangfireHttpJob</PackageProjectUrl>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <PackageId>Hangfire.HttpJob.Ext</PackageId>
     <Authors>gnsilence</Authors>
     <Company></Company>
