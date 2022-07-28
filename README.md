@@ -1,3 +1,5 @@
+[![image](https://badgen.net/badge/nuget/1.1.0/blue?icon=nuget)](https://www.nuget.org/packages/Hangfire.HttpJob.Ext) 
+
 2022-7-28
 ====
 ## 更新内容：
