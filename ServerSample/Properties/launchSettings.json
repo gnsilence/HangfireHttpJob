@@ -3,7 +3,7 @@
     "ServerSample": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "swagger",
+      "launchUrl": "job",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

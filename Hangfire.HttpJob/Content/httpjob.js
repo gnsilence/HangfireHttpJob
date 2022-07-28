@@ -445,13 +445,14 @@
             var pauseurl = config.PauseJobUrl;
             var getlisturl = config.GetJobListUrl;
             var divModel = '';
+            var divEditModel = '';
             var options = {
                 schema: {},
                 mode: 'code'
             };
 
-            var normal_templete = "{\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"JobName\":\"\",\"IsRetry\":false}";
-            var recurring_templete = "{\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"Corn\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"\",\"JobName\":\"\",\"IsRetry\":false}";
+            var normal_templete = "{\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"DelayFromMinutes\":1,\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"LockTimeOut\":20,\"Headers\":[],\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"JobName\":\"\",\"IsRetry\":false}";
+            var recurring_templete = "{\"Method\":\"GET\",\"ContentType\":\"application/json\",\"Url\":\"http://\",\"Data\":{},\"Timeout\":" + config.GlobalHttpTimeOut + ",\"LockTimeOut\":20,\"Headers\":[],\"Corn\":\"\",\"BasicUserName\":\"\",\"BasicPassword\":\"\",\"QueueName\":\"\",\"JobName\":\"\",\"IsRetry\":false}";
             //如果需要注入新增计划任务
             if (config.NeedAddNomalHttpJobButton) {
                 button =

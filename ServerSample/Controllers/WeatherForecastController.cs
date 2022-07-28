@@ -19,18 +19,10 @@ namespace ServerSample.Controllers
             _logger = logger;
         }
 
-        [NonAction]
-        [AutomaticRetry]
-        public async Task DoTest()
-        {
-            Console.WriteLine("123");
-            throw new Exception();
-        }
-
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
-            RecurringJob.AddOrUpdate<WeatherForecastController>("2255885588", a => DoTest(), "0/20 * * * *", TimeZoneInfo.Local, "api");
+            Thread.Sleep(TimeSpan.FromMinutes(5));
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateTime.Now.AddDays(index),

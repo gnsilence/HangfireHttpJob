@@ -4,8 +4,12 @@ using Hangfire.Dashboard;
 using Hangfire.Dashboard.BasicAuthorization;
 using Hangfire.Heartbeat;
 using Hangfire.HttpJob;
+using log4net;
+using log4net.Config;
+using log4net.Repository;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Serilog;
 using StackExchange.Redis;
 using System.Globalization;
 using System.Reflection;
@@ -20,6 +24,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<IISServerOptions>(x => x.AllowSynchronousIO = true);
 // 添加httpjob的依赖
 builder.Services.AddHttpJob();
+//builder.Host.UseSerilog((context, logger) =>
+//{
+//    logger.ReadFrom.Configuration(context.Configuration);
+//    logger.Enrich.FromLogContext();
+//});
+
+#region 配置日志 log4net
+
+builder.Logging.AddLog4Net(Path.Combine(AppContext.BaseDirectory, "log4net.config"));
+ILoggerRepository repository = LogManager.CreateRepository("ServerSampleRepository");
+XmlConfigurator.Configure(repository, new FileInfo("log4net.config"));
+
+#endregion 配置日志 log4net
 
 builder.Services.AddHangfire(config =>
 {

@@ -6,7 +6,6 @@ using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
 using Newtonsoft.Json;
-using NLog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,28 +29,32 @@ namespace Hangfire.HttpJob.Support
 
         public static HangfireHttpJobOptions HangfireHttpJobOptions;
 
-        public JobFilter(int timeoutInSeconds)
+        public JobFilter()
         {
-            if (timeoutInSeconds < 0)
-            {
-                throw new ArgumentException("超时参数不能设置为小于0的数");
-            }
-            _timeoutInSeconds = timeoutInSeconds;
         }
 
-        private static readonly Logger logger = new LogFactory().GetCurrentClassLogger();
+        private readonly ILog _logger = LogProvider.For<JobFilter>();
 
         public void OnCreated(CreatedContext filterContext)
         {
-            logger.Info(
-            "创建任务 `{0}` id为 `{1}`",
-            filterContext.Job.Method.Name,
-            filterContext.BackgroundJob?.Id);
+            _logger.Info(
+            $"创建任务 `{filterContext.Job.Method.Name}` id为 `{filterContext.BackgroundJob?.Id}`"
+           );
         }
 
         public void OnCreating(CreatingContext filterContext)
         {
-            logger.Info($"开始创建任务{filterContext.Job.Method.Name}");
+            //判断任务是否被暂停
+            using (var connection = JobStorage.Current.GetConnection())
+            {
+                var conts = connection.GetAllItemsFromSet($"JobPauseOf:{filterContext.Job.Args[1]}");
+                if (conts.Contains("true"))
+                {
+                    filterContext.Canceled = true;//任务被暂停不执行直接跳过
+                    return;
+                }
+            }
+            _logger.Info($"开始创建任务{filterContext.Job.Method.Name}");
         }
 
         public void OnPerformed(PerformedContext filterContext)
@@ -67,22 +70,12 @@ namespace Hangfire.HttpJob.Support
 
         public void OnPerforming(PerformingContext filterContext)
         {
-            DeleteLogfiles();
             //设置分布式锁,分布式锁会阻止两个相同的任务并发执行，用任务名称和方法名称作为锁
             var jobresource = $"{filterContext.BackgroundJob.Job.Args[1]}.{filterContext.BackgroundJob.Job.Method.Name}";
-            var locktimeout = TimeSpan.FromSeconds(_timeoutInSeconds);
+            var locktime = JsonConvert.DeserializeObject<HttpJobItem>(filterContext.BackgroundJob.Job.Args[0].ToString())?.LockTimeOut ?? 0;
+            var locktimeout = TimeSpan.FromSeconds(locktime);
             try
             {
-                //判断任务是否被暂停
-                using (var connection = JobStorage.Current.GetConnection())
-                {
-                    var conts = connection.GetAllItemsFromSet($"JobPauseOf:{filterContext.BackgroundJob.Job.Args[1]}");
-                    if (conts.Contains("true"))
-                    {
-                        filterContext.Canceled = true;//任务被暂停不执行直接跳过
-                        return;
-                    }
-                }
                 //申请分布式锁
                 var distributedLock = filterContext.Connection.AcquireDistributedLock(jobresource, locktimeout);
                 filterContext.Items["DistributedLock"] = distributedLock;
@@ -91,7 +84,7 @@ namespace Hangfire.HttpJob.Support
             {
                 //获取锁超时，取消任务，任务会默认置为成功
                 filterContext.Canceled = true;
-                logger.Info($"任务{filterContext.BackgroundJob.Job.Args[1]}超时,任务id{filterContext.BackgroundJob.Id}异常信息:{ec}");
+                _logger.Error($"任务{filterContext.BackgroundJob.Job.Args[1]}超时,任务id{filterContext.BackgroundJob.Id}异常信息:{ec}");
             }
         }
 
@@ -105,10 +98,8 @@ namespace Hangfire.HttpJob.Support
         {
             if (context.CandidateState is FailedState failedState)
             {
-                logger.Warn(
-                    "任务 `{0}` 执行失败，异常为 `{1}`",
-                    context.BackgroundJob.Id,
-                    failedState.Exception);
+                _logger.Warn(
+                   $"任务 `{context.BackgroundJob.Id}` 执行失败，异常为 `{failedState.Exception}`");
             }
         }
 
@@ -120,6 +111,7 @@ namespace Hangfire.HttpJob.Support
         /// <summary>
         /// 清除日志文件，每隔20天按日期清理一次
         /// </summary>
+        [Obsolete("已删除")]
         private Task DeleteLogfiles()
         {
             DirectoryInfo dir = new DirectoryInfo($"{AppContext.BaseDirectory}/logs/");
@@ -144,7 +136,7 @@ namespace Hangfire.HttpJob.Support
                   }
                   catch (Exception ex)
                   {
-                      logger.Error(ex, "删除日志文件出错：");
+                      _logger.Error($"删除日志文件出错：{ex.Message}");
                   }
               });
             return Task.CompletedTask;

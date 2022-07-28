@@ -45,8 +45,6 @@ Dashboard UI 增加暗黑模式，根据电脑系统，黑色及浅色主题自�
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2-beta1" />
-    <PackageReference Include="NLog" Version="5.0.1" />
-    <PackageReference Include="NLog.Config" Version="4.7.15" />
     <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />
     <PackageReference Include="TimeZoneConverter" Version="5.0.0" />
   </ItemGroup>

@@ -1,6 +1,7 @@
 ﻿using Hangfire.Dashboard;
 using Hangfire.Logging;
 using Hangfire.Storage;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace Hangfire.HttpJob.Server
 {
     public class HttpJobDispatcher : IDashboardDispatcher
     {
-        private static readonly ILog Logger = LogProvider.For<HttpJobDispatcher>();
+        private readonly ILog _logger = LogProvider.For<HttpJobDispatcher>();
 
         public HttpJobDispatcher(HangfireHttpJobOptions options)
         {
@@ -133,7 +134,7 @@ namespace Hangfire.HttpJob.Server
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("HttpJobDispatcher.Dispatch", ex);
+                _logger.Error($"HttpJobDispatcher.Dispatch:{ex.StackTrace}");
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 return Task.FromResult(false);
@@ -157,7 +158,7 @@ namespace Hangfire.HttpJob.Server
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("HttpJobDispatcher.GetJobItem", ex);
+                _logger.Error($"HttpJobDispatcher.GetJobItem: {ex.StackTrace}");
                 return null;
             }
         }
@@ -197,7 +198,7 @@ namespace Hangfire.HttpJob.Server
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("HttpJobDispatcher.AddHttpbackgroundjob", ex);
+                _logger.Error($"HttpJobDispatcher.AddHttpbackgroundjob: {ex.StackTrace}");
                 return false;
             }
         }
@@ -271,15 +272,17 @@ namespace Hangfire.HttpJob.Server
             }
             try
             {
-                RecurringJob.AddOrUpdate<HttpJob>(jobItem.JobName, jobItem.QueueName, a => a.ExcuteAsync(jobItem, jobItem.JobName, jobItem.QueueName, jobItem.IsRetry, null), jobItem.Corn, new RecurringJobOptions()
+                //RecurringJob.AddOrUpdate<HttpJob>(jobItem.JobName, jobItem.QueueName, a => a.ExcuteAsync(jobItem, jobItem.JobName, jobItem.QueueName, jobItem.IsRetry, null), jobItem.Corn);
+                RecurringJob.AddOrUpdate<HttpJob>(jobItem.JobName, a => a.ExcuteAsync(jobItem, jobItem.JobName, jobItem.QueueName, jobItem.IsRetry, null), jobItem.Corn, new RecurringJobOptions()
                 {
+                    QueueName = jobItem.QueueName,
                     TimeZone = TimeZoneInfo.Local
                 });
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.ErrorException("HttpJobDispatcher.AddHttprecurringjob", ex);
+                _logger.Error($"HttpJobDispatcher.AddHttprecurringjob: {ex.StackTrace}");
                 return false;
             }
         }

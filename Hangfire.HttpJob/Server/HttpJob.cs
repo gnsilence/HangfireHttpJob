@@ -12,16 +12,16 @@ using MailKit;
 using MimeKit;
 using MailKit.Net.Smtp;
 using Hangfire.HttpJob.Support;
-using NLog;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace Hangfire.HttpJob.Server
 {
     public class HttpJob
     {
-        private static readonly Logger logger = new LogFactory().GetCurrentClassLogger();
+        private readonly ILog _logger = LogProvider.For<HttpJob>();
         public static HangfireHttpJobOptions HangfireHttpJobOptions;
         private static MimeMessage mimeMessage;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -38,7 +38,7 @@ namespace Hangfire.HttpJob.Server
         /// <param name="Url">地址</param>
         /// <param name="exception">异常信息</param>
         /// <returns></returns>
-        public static bool SendEmail(string jobname, string Url, string exception)
+        public async Task<bool> SendEmail(string jobname, string Url, string exception)
         {
             try
             {
@@ -57,16 +57,16 @@ namespace Hangfire.HttpJob.Server
                 };
                 mimeMessage.Body = builder.ToMessageBody();
                 var client = new SmtpClient();
-                client.Connect(HangfireHttpJobOptions.SMTPServerAddress, HangfireHttpJobOptions.SMTPPort, true);     //连接服务
+                await client.ConnectAsync(HangfireHttpJobOptions.SMTPServerAddress, HangfireHttpJobOptions.SMTPPort, true);     //连接服务
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
-                client.Authenticate(HangfireHttpJobOptions.SendMailAddress,
-                    HangfireHttpJobOptions.SMTPPwd); //验证账号密码
-                client.Send(mimeMessage);
-                client.Disconnect(true);
+                await client.AuthenticateAsync(HangfireHttpJobOptions.SendMailAddress,
+                     HangfireHttpJobOptions.SMTPPwd); //验证账号密码
+                await client.SendAsync(mimeMessage);
+                await client.DisconnectAsync(true);
             }
             catch (Exception ee)
             {
-                logger.Info($"邮件服务异常，异常为：{ee}");
+                _logger.Info($"邮件服务异常，异常为：{ee}");
                 return false;
             }
             return true;
@@ -166,6 +166,13 @@ namespace Hangfire.HttpJob.Server
         public static HttpRequestMessage PrepareHttpRequestMessage(HttpJobItem item)
         {
             var request = new HttpRequestMessage(new HttpMethod(item.Method), item.Url);
+            if (item.Headers.Any())
+            {
+                item.Headers.ForEach(h =>
+                {
+                    request.Headers.Add(h.Key, h.Value);
+                });
+            }
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(item.ContentType));
             if (!item.Method.ToLower().Equals("get"))
             {
@@ -186,7 +193,7 @@ namespace Hangfire.HttpJob.Server
         /// <param name="context"></param>
         [AutomaticRetrySet(LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
         [DisplayName("Args : [  JobName : {1}  |  Queue : {2}  |  IsRetry : {3} ]")]
-        [JobFilter(timeoutInSeconds: 3600)]
+        [JobFilter]
         public async Task ExcuteAsync(HttpJobItem item, string jobName = null, string queuename = null, bool isretry = false, PerformContext context = null)
         {
             try
@@ -212,9 +219,9 @@ namespace Hangfire.HttpJob.Server
                 context.SetTextColor(ConsoleTextColor.Red);
                 if (count == HangfireHttpJobOptions.AttemptsCountArray.Count().ToString() && HangfireHttpJobOptions.UseEmail)//重试达到三次的时候发邮件通知
                 {
-                    SendEmail(item.JobName, item.Url, ex.ToString());
+                    await SendEmail(item.JobName, item.Url, ex.ToString());
                 }
-                logger.Error(ex, "HttpJob.Excute");
+                _logger.Error($"任务执行出错: \n 错误消息：{ex.Message} \n 异常详情：{ex.StackTrace}");
                 context.WriteLine($"执行出错：{ex.Message}");
                 throw;//不抛异常不会执行重试操作
             }

@@ -2,7 +2,6 @@
 using Hangfire.HttpJob.Server;
 using Hangfire.Server;
 using Newtonsoft.Json;
-using NLog;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,6 +11,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Console;
+using Microsoft.Extensions.Logging;
+using Hangfire.Logging;
 
 namespace Hangfire.HttpJob.Support
 {
@@ -21,13 +22,16 @@ namespace Hangfire.HttpJob.Support
         /// 执行频率/秒
         /// </summary>
         public static BackWorker _backWorker;
+
+        private readonly ILog _logger = LogProvider.For<BackWorkers>();
+
         public BackWorkers(BackWorker backWorker)
         {
             _backWorker = backWorker;
         }
+
         public void Execute([NotNull] BackgroundProcessContext context)
         {
-
             using (var connetion = context.Storage.GetConnection())
             {
                 //申请分布式锁
@@ -38,16 +42,13 @@ namespace Hangfire.HttpJob.Support
             }
             context.Wait(TimeSpan.FromSeconds(_backWorker.Internal));
         }
-
     }
 
-    [Queue("api")]
     [AutomaticRetry(Attempts = 3, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
     public class DoTest
     {
-        private static readonly Logger logger = new LogFactory().GetCurrentClassLogger();
         [DisplayName("BackGroundJob:{0}")]
-        public void SendRequest(string jobname, BackWorker backWorker, [CanBeNull]PerformContext pcontext)
+        public void SendRequest(string jobname, BackWorker backWorker, [CanBeNull] PerformContext pcontext)
         {
             //将日志输出到控制台展示
             pcontext.WriteLine($"任务名称:{jobname},执行时间{DateTime.Now}");
@@ -62,6 +63,7 @@ namespace Hangfire.HttpJob.Support
                 pcontext.WriteLine($"执行任务失败,出现异常：{ec}");
             }
         }
+
         /// <summary>
         /// 发送请求
         /// </summary>
