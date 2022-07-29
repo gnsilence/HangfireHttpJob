@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.Redis.StackExchang
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.HttpJob.Storage.All", "Hangfire.HttpJob.Storage.All\Hangfire.HttpJob.Storage.All.csproj", "{02811364-3653-4D30-8676-7819386B8E9F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerSample", "ServerSample\ServerSample.csproj", "{3A3999B2-855D-49C3-8B87-3E169A48AC7D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSample", "ServerSample\ServerSample.csproj", "{3A3999B2-855D-49C3-8B87-3E169A48AC7D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

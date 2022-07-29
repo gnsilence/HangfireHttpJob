@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Hangfire.HttpJob.InterFace;
 
 namespace Hangfire.HttpJob
 {
@@ -42,6 +43,8 @@ namespace Hangfire.HttpJob
             services.Configure<KestrelServerOptions>(x => x.AllowSynchronousIO = true);
             // 添加httpClientFactory
             services.AddHttpClient();
+
+            services.TryAddSingleton<IHttpJobService, HttpJobService>();
         }
     }
 }
