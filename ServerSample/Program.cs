@@ -40,7 +40,22 @@ XmlConfigurator.Configure(repository, new FileInfo("log4net.config"));
 
 #endregion 配置日志 log4net
 
-var Redis = ConnectionMultiplexer.Connect(builder.Configuration["RedisServer"].ToString());
+ConfigurationOptions sentinelOptions = new ConfigurationOptions();
+sentinelOptions.EndPoints.Add("49.233.174.240", 26379);
+sentinelOptions.EndPoints.Add("49.233.174.240", 26380);
+sentinelOptions.EndPoints.Add("49.233.174.240", 26381);
+sentinelOptions.TieBreaker = "";
+sentinelOptions.CommandMap = CommandMap.Sentinel;
+sentinelOptions.AbortOnConnectFail = false;
+// Connect!
+ConnectionMultiplexer sentinelConnection = ConnectionMultiplexer.Connect(sentinelOptions);
+
+// Get a connection to the master
+ConfigurationOptions redisServiceOptions = new ConfigurationOptions();
+redisServiceOptions.ServiceName = "mymaster";   //master名称
+redisServiceOptions.Password = "123456";     //master访问密码
+redisServiceOptions.AbortOnConnectFail = true;
+ConnectionMultiplexer masterConnection = sentinelConnection.GetSentinelMasterConnection(redisServiceOptions);
 builder.Services.AddHangfire(config =>
 {
     // 自定义样式及脚本导入，必须设置为嵌入式资源
@@ -94,7 +109,7 @@ builder.Services.AddHangfireServer((s, op) =>
     op.Queues = listqueue.ToArray();// 队列
     op.WorkerCount = Math.Max(Environment.ProcessorCount, 40);// 工作线程数，当前允许的最大线程，默认20
     op.StopTimeout = TimeSpan.FromSeconds(20);
-}, JobStorage.Current = new RedisStorage(Redis, new RedisStorageOptions()
+}, JobStorage.Current = new RedisStorage(masterConnection, new RedisStorageOptions()
 {
     Db = 10,
     FetchTimeout = TimeSpan.FromMinutes(5),
