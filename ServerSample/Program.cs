@@ -3,7 +3,9 @@ using Hangfire.Console;
 using Hangfire.Dashboard;
 using Hangfire.Dashboard.BasicAuthorization;
 using Hangfire.Heartbeat;
+using Hangfire.Heartbeat.Server;
 using Hangfire.HttpJob;
+using Hangfire.Redis;
 using log4net;
 using log4net.Config;
 using log4net.Repository;
@@ -38,6 +40,7 @@ XmlConfigurator.Configure(repository, new FileInfo("log4net.config"));
 
 #endregion 配置日志 log4net
 
+var Redis = ConnectionMultiplexer.Connect(builder.Configuration["RedisServer"].ToString());
 builder.Services.AddHangfire(config =>
 {
     // 自定义样式及脚本导入，必须设置为嵌入式资源
@@ -46,19 +49,20 @@ builder.Services.AddHangfire(config =>
 
     config.UseHeartbeatPage(checkInterval: TimeSpan.FromSeconds(1));
     config.UseDarkModeSupportForDashboard();
-    var Redis = ConnectionMultiplexer.Connect(builder.Configuration["RedisServer"].ToString());
-    config.UseRedisStorage(Redis, new Hangfire.Redis.RedisStorageOptions()
-    {
-        Db = 10,
-        FetchTimeout = TimeSpan.FromMinutes(5),
-        Prefix = "{IMFHangfire}:",
-        //活动服务器超时时间
-        InvisibilityTimeout = TimeSpan.FromHours(1),
-        //任务过期检查频率
-        ExpiryCheckInterval = TimeSpan.FromHours(1),
-        DeletedListSize = 10000,
-        SucceededListSize = 10000
-    })
+
+    config
+    //.UseRedisStorage(Redis, new Hangfire.Redis.RedisStorageOptions()
+    //{
+    //    Db = 10,
+    //    FetchTimeout = TimeSpan.FromMinutes(5),
+    //    Prefix = "{IMFHangfire}:",
+    //    //活动服务器超时时间
+    //    InvisibilityTimeout = TimeSpan.FromHours(1),
+    //    //任务过期检查频率
+    //    ExpiryCheckInterval = TimeSpan.FromHours(1),
+    //    DeletedListSize = 10000,
+    //    SucceededListSize = 10000
+    //})
     .UseHangfireHttpJob(new HangfireHttpJobOptions()
     {
         UseEmail = true,// 使用邮箱
@@ -82,7 +86,7 @@ builder.Services.AddHangfire(config =>
 });
 
 var listqueue = new[] { "default", "apis", "localjobs" };// 队列，必须包含默认default
-builder.Services.AddHangfireServer(op =>
+builder.Services.AddHangfireServer((s, op) =>
 {
     op.ServerTimeout = TimeSpan.FromMinutes(4);
     op.SchedulePollingInterval = TimeSpan.FromSeconds(1);// 秒级任务需要配置短点，一般任务可以配置默认时间，默认15秒
@@ -90,7 +94,18 @@ builder.Services.AddHangfireServer(op =>
     op.Queues = listqueue.ToArray();// 队列
     op.WorkerCount = Math.Max(Environment.ProcessorCount, 40);// 工作线程数，当前允许的最大线程，默认20
     op.StopTimeout = TimeSpan.FromSeconds(20);
-});
+}, JobStorage.Current = new RedisStorage(Redis, new RedisStorageOptions()
+{
+    Db = 10,
+    FetchTimeout = TimeSpan.FromMinutes(5),
+    Prefix = "{IMFHangfire}:",
+    //活动服务器超时时间
+    InvisibilityTimeout = TimeSpan.FromHours(1),
+    //任务过期检查频率
+    ExpiryCheckInterval = TimeSpan.FromHours(1),
+    DeletedListSize = 10000,
+    SucceededListSize = 10000
+}), additionalProcesses: new[] { new ProcessMonitor(checkInterval: TimeSpan.FromSeconds(1)) });
 
 #endregion 后台任务 hangfire
 
