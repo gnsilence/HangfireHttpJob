@@ -84,13 +84,13 @@ builder.Services.AddHangfire(config =>
         AutomaticDelete = 2,// 设置作业执行后多久过期，单位天， 默认3天
         // 重试配置
         AttemptsCountArray = new List<int>() { 5, 10, 20 },//重试时间间隔，数组长度是重试次数
-        AddHttpJobButtonName = "添加计划任务",
-        AddRecurringJobHttpJobButtonName = "添加定时任务",
-        EditRecurringJobButtonName = "编辑定时任务",
-        PauseJobButtonName = "暂停或开始",
+        AddHttpJobButtonName = "add plan job",
+        AddRecurringJobHttpJobButtonName = "add httpjob",
+        EditRecurringJobButtonName = "edit httpjob",
+        PauseJobButtonName = "pause or continue",
         //DashboardTitle = "后台任务",
-        DashboardName = "后台任务管理",
-        DashboardFooter = "后台任务管理",
+        DashboardName = "this is title",
+        DashboardFooter = "httpjob",
     })
     .UseConsole(new ConsoleOptions()
     {
