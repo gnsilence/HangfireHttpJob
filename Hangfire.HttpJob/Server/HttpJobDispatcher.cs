@@ -170,17 +170,26 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         public string GetJobdata(string name)
         {
-            using (var connection = JobStorage.Current.GetConnection())
+            try
             {
-                var RecurringJob = StorageConnectionExtensions.GetRecurringJobs(connection).
-                    Where(p => p.Id == name).FirstOrDefault();
-                if (RecurringJob != null)
+                using (var connection = JobStorage.Current.GetConnection())
                 {
-                    return JsonConvert.SerializeObject(
-                        JsonConvert.DeserializeObject<RecurringJobItem>(RecurringJob.Job.Args.FirstOrDefault().ToString())
-                        );
+                    var RecurringJob = StorageConnectionExtensions.GetRecurringJobs(connection).
+                        Where(p => p.Id == name).FirstOrDefault();
+                    if (RecurringJob != null)
+                    {
+                        return JsonConvert.SerializeObject(
+                            JsonConvert.DeserializeObject<RecurringJobItem>(RecurringJob.Job.Args.FirstOrDefault().ToString())
+                            );
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.Error($"获取job失败： 错误消息 {ex.Message}\n 堆栈信息： {ex.StackTrace}");
+                throw;
+            }
+
             return "";
         }
 
@@ -210,24 +219,32 @@ namespace Hangfire.HttpJob.Server
         /// <returns></returns>
         public bool PauseOrRestartJob(string jobname)
         {
-            using (var connection = JobStorage.Current.GetConnection())
+            try
             {
-                using (var tran = connection.CreateWriteTransaction())
+                using (var connection = JobStorage.Current.GetConnection())
                 {
-                    var conts = connection.GetAllItemsFromSet($"JobPauseOf:{jobname}");
-                    if (conts.Contains("true"))
+                    using (var tran = connection.CreateWriteTransaction())
                     {
-                        tran.RemoveFromSet($"JobPauseOf:{jobname}", "true");
-                        tran.AddToSet($"JobPauseOf:{jobname}", "false");
-                        tran.Commit();
-                    }
-                    else
-                    {
-                        tran.RemoveFromSet($"JobPauseOf:{jobname}", "false");
-                        tran.AddToSet($"JobPauseOf:{jobname}", "true");
-                        tran.Commit();
+                        var conts = connection.GetAllItemsFromSet($"JobPauseOf:{jobname}");
+                        if (conts.Contains("true"))
+                        {
+                            tran.RemoveFromSet($"JobPauseOf:{jobname}", "true");
+                            tran.AddToSet($"JobPauseOf:{jobname}", "false");
+                            tran.Commit();
+                        }
+                        else
+                        {
+                            tran.RemoveFromSet($"JobPauseOf:{jobname}", "false");
+                            tran.AddToSet($"JobPauseOf:{jobname}", "true");
+                            tran.Commit();
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"暂停job失败： 错误消息 {ex.Message}\n 堆栈信息： {ex.StackTrace}");
+                throw;
             }
             return true;
         }
