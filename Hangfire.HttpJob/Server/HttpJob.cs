@@ -191,7 +191,8 @@ namespace Hangfire.HttpJob.Server
         /// <param name="item"></param>
         /// <param name="jobName"></param>
         /// <param name="context"></param>
-        [AutomaticRetrySet(LogEvents = true, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
+        ///
+        [AutomaticRetrySet(OnAttemptsExceeded = AttemptsExceededAction.Delete, LogEvents = true)]
         [DisplayName("Args : [  JobName : {1}  |  Queue : {2}  |  IsRetry : {3} ]")]
         [JobFilter]
         public async Task ExcuteAsync(HttpJobItem item, string jobName = null, string queuename = null, bool isretry = false, PerformContext context = null)
@@ -209,8 +210,16 @@ namespace Hangfire.HttpJob.Server
                 var httpResponse = new HttpResponseMessage();
                 httpResponse = await SendUrlRequest(item, client, httpMesage);
                 HttpContent content = httpResponse.Content;
+
                 string result = await content.ReadAsStringAsync();
                 context.WriteLine($"执行结果：{result}");
+                if (HangfireHttpJobOptions.DeleteOnFail && httpResponse.StatusCode != HttpStatusCode.OK)
+                {
+                    context.SetJobParameter("RetryCount", "10");
+                    context.WriteLine($"接口执行错误:{result}");
+                    throw new Exception($"接口执行错误:{result}");
+                    //context.SetJobParameter("State", "Failed");
+                }
             }
             catch (Exception ex)
             {

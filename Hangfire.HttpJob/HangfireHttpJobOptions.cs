@@ -107,5 +107,10 @@ namespace Hangfire.HttpJob
         /// 任务失败后重试的间隔时间，单位秒，重试次数是数组长度
         /// </summary>
         public List<int> AttemptsCountArray { get; set; } = new List<int>() { 10, 20, 30, 40, 50, 60 };
+
+        /// <summary>
+        /// 当接口内部返回非200 状态码，标记作业为删除
+        /// </summary>
+        public bool DeleteOnFail { get; set; }
     }
 }

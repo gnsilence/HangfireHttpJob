@@ -95,8 +95,8 @@ namespace ServerSample.Controllers
             //}, dateTimeOffset: DateTime.Parse($"2022-07-29 13:59:50"));
 
             // 自己的非httpjob方法
-
-            BackgroundJob.Enqueue<WeatherForecastController>(a => a.MyTestMethodAsync(default));
+            throw new Exception();
+            //BackgroundJob.Enqueue<WeatherForecastController>(a => a.MyTestMethodAsync(default));
         }
 
         [NonAction]

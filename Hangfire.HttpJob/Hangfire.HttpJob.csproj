@@ -3,19 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Description>新增：暴露出接口给宿主程序直接调用
-接口内容
-接口注入方式 构造函数注入 IHttpJobService 可参考示例项目
-1，TrrigerJob 手动触发一个周期任务
-2，AddOrUpdateRecurringJob 添加或更新一个周期任务
-3，EnqueueBackGroundHttpJob 添加一个队列任务，排队执行
-4，DeleteRecurringJob 删除一个周期任务
-5，AddScheduleJob 添加一个计划任务 支持重载 传入 TimeSpan 或者 DateTimeOffset 用于指定执行时间
-6，AddContinueRecurringJobs 传入一组n个任务，用于执行连续性任务，根据数组顺序依次执行任务,只有前面的任务执行成功后续任务才会执行
-注意：除周期类型外，其他类型job无需指定cron表达式</Description>
+    <Description>增加配置参数 DeleteOnFail
+设置后当接口中请求的数据返回非200状态则将任务标记为删除状态
+</Description>
     <PackageLicenseUrl>https://github.com/gnsilence/HangfireHttpJob</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/gnsilence/HangfireHttpJob</PackageProjectUrl>
-    <Version>1.1.2</Version>
+    <Version>1.1.3</Version>
     <PackageId>Hangfire.HttpJob.Ext</PackageId>
     <Authors>gnsilence</Authors>
     <Company></Company>

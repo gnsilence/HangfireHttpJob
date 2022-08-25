@@ -82,8 +82,9 @@ builder.Services.AddHangfire(config =>
     {
         UseEmail = true,// 使用邮箱
         AutomaticDelete = 2,// 设置作业执行后多久过期，单位天， 默认3天
+        DeleteOnFail = true,
         // 重试配置
-        AttemptsCountArray = new List<int>() { 5, 10, 20 },//重试时间间隔，数组长度是重试次数
+        AttemptsCountArray = new List<int>() { 5 },//重试时间间隔，数组长度是重试次数
         AddHttpJobButtonName = "add plan job",
         AddRecurringJobHttpJobButtonName = "add httpjob",
         EditRecurringJobButtonName = "edit httpjob",
