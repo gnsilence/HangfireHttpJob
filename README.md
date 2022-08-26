@@ -1,4 +1,7 @@
-[![image](https://badgen.net/badge/nuget/1.1.2/blue?icon=nuget)](https://www.nuget.org/packages/Hangfire.HttpJob.Ext) 
+[![image](https://badgen.net/badge/nuget/1.1.3/blue?icon=nuget)](https://www.nuget.org/packages/Hangfire.HttpJob.Ext) 
+2022-08-26
+- 增加配置参数 DeleteOnFail
+- 设置后当接口中请求的数据返回非200状态则将任务标记为删除状态(标记已失败在新版本中通过重试特性设置无效应该是hangfire的bug 后续会修改为失败状态)
 
 2022-7-29
 ====
